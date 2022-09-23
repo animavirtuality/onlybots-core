@@ -1,0 +1,43 @@
+{
+  "name": "onlybots-core",
+  "version": "0.0.1",
+  "author": "Anima Virtuality",
+  "license": "MIT",
+  "description": "Core functionality for OnlyBots",
+  "repository": {
+    "url": "https://github.com/animavirtuality/onlybots-core"
+  },
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "postinstall": "husky install",
+    "build": "rm -rf ./build ./dist && tsc --outDir ./build/esm --declaration --declarationDir ./build/types && tsc --module commonjs --outDir ./build/cjs && tsc-alias --dir ./build/types && tsc-alias --resolve-full-paths --dir ./build/esm && tsc-alias --resolve-full-paths --dir ./build/cjs",
+    "prepack": "npm run build && mkdir -p ./dist && cp -r ./build/types ./build/esm ./build/cjs ./dist"
+  },
+  "devDependencies": {
+    "@types/node": "^18.7.19",
+    "@typescript-eslint/eslint-plugin": "^5.38.0",
+    "@typescript-eslint/parser": "^5.38.0",
+    "eslint": "^8.23.1",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-chai-friendly": "^0.7.2",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "prettier": "^2.7.1",
+    "ts-node": "^10.9.1",
+    "tsc-alias": "^1.7.0",
+    "tslib": "^2.4.0",
+    "typescript": "^4.8.3"
+  }
+}

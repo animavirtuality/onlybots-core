@@ -1,0 +1,74 @@
+{
+    "root": true,
+    "env": {
+        "node": true,
+        "es2021": true
+    },
+    "parserOptions": {
+        "sourceType": "module"
+    },
+    "plugins": ["import", "unused-imports", "chai-friendly"],
+    "extends": ["eslint:recommended", "prettier"],
+    "rules": {
+        "no-extra-boolean-cast": "off",
+        "import/no-commonjs": "error",
+        "import/no-default-export": "error",
+        "unused-imports/no-unused-imports": "error",
+        "import/order": [
+            "error",
+            {
+                "groups": ["builtin", "external"]
+            }
+        ]
+    },
+    "overrides": [
+        {
+            "files": ["**/*.{ts,tsx}"],
+            "parser": "@typescript-eslint/parser",
+            "parserOptions": {
+                "project": "tsconfig.json"
+            },
+            "plugins": ["@typescript-eslint"],
+            "extends": ["plugin:@typescript-eslint/recommended"],
+            "rules": {
+                "no-restricted-imports": [
+                    "error",
+                    {
+                        "patterns": [
+                            {
+                                "group": [".*"],
+                                "message": "Use aliased absolute imports (@/...) instead of relative"
+                            },
+                            {
+                                "group": ["\\/*"],
+                                "message": "Use aliased absolute imports (@/...) instead "
+                            }
+                        ]
+                    }
+                ],
+                "@typescript-eslint/no-floating-promises": "error",
+                "@typescript-eslint/no-misused-promises": ["error", { "checksVoidReturn": { "arguments": false } }],
+                "@typescript-eslint/explicit-function-return-type": [
+                    "error",
+                    {
+                        "allowConciseArrowFunctionExpressionsStartingWithVoid": true,
+                        "allowExpressions": true,
+                        "allowTypedFunctionExpressions": true
+                    }
+                ],
+                "@typescript-eslint/no-explicit-any": "off",
+                "@typescript-eslint/no-inferrable-types": "off",
+                "@typescript-eslint/no-non-null-assertion": "error",
+                "@typescript-eslint/ban-ts-comment": "error",
+                "@typescript-eslint/no-this-alias": "error"
+            }
+        },
+        {
+            "files": ["**/test/**.js", "**/test/**.ts"],
+            "rules": {
+                "no-unused-expressions": "off",
+                "chai-friendly/no-unused-expressions": "error"
+            }
+        }
+    ]
+}

@@ -1,0 +1,16 @@
+# IDE
+.idea/
+.vscode/
+.history/
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+*Zone.Identifier
+
+# Project
+/build/
+/dist/
+node_modules/
+
