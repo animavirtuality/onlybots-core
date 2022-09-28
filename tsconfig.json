@@ -11,8 +11,8 @@
         "paths": {
             "@/*": ["./*"]
         },
-        "outDir": "./build/esm",
-        "tsBuildInfoFile": "./build/tsconfig.tsbuildinfo",
+        "outDir": "./build/tsc/esm",
+        "tsBuildInfoFile": "./build/tsc/tsconfig.tsbuildinfo",
 
         "isolatedModules": true,
         "esModuleInterop": true,

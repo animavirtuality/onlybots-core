@@ -1,0 +1,21 @@
+{
+    "rootDir": "./src",
+    "cacheDirectory": "<rootDir>/../build/jest-cache",
+    "testMatch": ["**/__tests__/**/*.ts", "**/__tests__/**/*.tsx"],
+    "moduleFileExtensions": ["js", "jsx", "ts", "tsx"],
+    "transform": {
+        "^.+\\.tsx?$": [
+            "ts-jest",
+            {
+                "useESM": true
+            }
+        ]
+    },
+    "moduleNameMapper": {
+        "^@/(.*)$": "<rootDir>/$1"
+    },
+    "collectCoverage": true,
+    "coverageDirectory": "<rootDir>/../build/coverage",
+    "coverageProvider": "v8",
+    "collectCoverageFrom": ["**/*.ts", "**/*.tsx"]
+}
