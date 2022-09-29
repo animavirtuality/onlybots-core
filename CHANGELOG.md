@@ -8,4 +8,4 @@ and this project (loosely) adheres to [Semantic Versioning](https://semver.org/s
 
 ## [Unreleased]
 ### Added
-* Initial commit
+* Initial code
