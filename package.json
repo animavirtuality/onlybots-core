@@ -22,7 +22,7 @@
     "dist/"
   ],
   "scripts": {
-    "postinstall": "husky install",
+    "prepare": "husky install",
     "lint": "eslint src",
     "test": "npx jest",
     "build": "rm -rf ./build/tsc ./dist && tsc -p ./tsconfig.dist.json --outDir ./build/tsc/esm --declaration --declarationDir ./build/tsc/types && tsc -p ./tsconfig.dist.json --module commonjs --outDir ./build/tsc/cjs && tsc-alias --dir ./build/tsc/types && tsc-alias --resolve-full-paths --dir ./build/tsc/esm && tsc-alias --resolve-full-paths --dir ./build/tsc/cjs",
