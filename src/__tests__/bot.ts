@@ -3,7 +3,7 @@ import { OnlyBot, OnlyBotAnchor, OnlyBotMaterial } from '@/bot';
 import { Point3 } from '@/point';
 
 describe('OnlyBot', () => {
-    it('should construct a bot from valid json', () => {
+    it('constructs a bot from valid json', () => {
         expect(() => {
             OnlyBot.fromJSON({
                 name: 'bot',
@@ -29,13 +29,13 @@ describe('OnlyBot', () => {
         }).not.toThrow();
     });
 
-    it('should throw when given invalid json', () => {
+    it('throws when given invalid json', () => {
         expect(() => {
             OnlyBot.fromJSON({});
         }).toThrow('Validation failed:');
     });
 
-    it('should serialize voxels stably', () => {
+    it('serializes voxels stably', () => {
         const name = 'name';
         const anchor: OnlyBotAnchor = { x: 0, y: 0, z: 0 };
         const materials: OnlyBotMaterial[] = [{ color: [0, 0, 0], shader: 0 }];
@@ -52,6 +52,60 @@ describe('OnlyBot', () => {
         ]);
 
         const indent = '  ';
-        expect(bot1.toJSON(indent)).toEqual(bot2.toJSON(indent));
+        expect(bot1.toJSON(indent)).toBe(bot2.toJSON(indent));
+    });
+
+    it('can flatten voxel list', () => {
+        const voxel1 = new Point3(0, 0, 0);
+        const voxel2 = new Point3(3, 2, 4);
+        const voxel3 = new Point3(5, 6, 8);
+
+        const bot = new OnlyBot(
+            '',
+            { x: 0, y: 0, z: 0 },
+            [{ color: [0, 0, 0], shader: 0 }],
+            [
+                { type: 0, material: 0, voxels: [voxel1] },
+                { type: 0, material: 0, voxels: [voxel3, voxel2] },
+            ]
+        );
+
+        const voxels = bot.voxels();
+        expect(voxels.length).toBe(3);
+        expect(voxels.includes(voxel1)).toBe(true);
+        expect(voxels.includes(voxel2)).toBe(true);
+        expect(voxels.includes(voxel3)).toBe(true);
+    });
+
+    it('packs voxels to 0,0,0', () => {
+        const voxel1 = new Point3(2, 5, 12);
+        const voxel2 = new Point3(15, 4, 9);
+        const voxel3 = new Point3(7, 14, 8);
+        const voxel4 = new Point3(10, 10, 10);
+
+        const bot = new OnlyBot(
+            '',
+            { x: 0, y: 0, z: 0 },
+            [{ color: [0, 0, 0], shader: 0 }],
+            [{ type: 0, material: 0, voxels: [voxel1, voxel2, voxel3, voxel4] }]
+        );
+
+        bot.pack();
+
+        expect(voxel1.x).toBe(0);
+        expect(voxel1.y).toBe(1);
+        expect(voxel1.z).toBe(4);
+
+        expect(voxel2.x).toBe(13);
+        expect(voxel2.y).toBe(0);
+        expect(voxel2.z).toBe(1);
+
+        expect(voxel3.x).toBe(5);
+        expect(voxel3.y).toBe(10);
+        expect(voxel3.z).toBe(0);
+
+        expect(voxel4.x).toBe(8);
+        expect(voxel4.y).toBe(6);
+        expect(voxel4.z).toBe(2);
     });
 });

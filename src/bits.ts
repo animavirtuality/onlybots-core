@@ -2,7 +2,7 @@ export const splitBits = (bits: number): [number, number] => [Math.floor(bits / 
 
 export const allocBits = (n: number): Buffer => {
     const [bytes, bits] = splitBits(n);
-    return Buffer.alloc(bytes + (bits > 0 ? 1 : 0));
+    return Buffer.alloc(bytes + (bits > 0 ? 1 : 0), 0);
 };
 
 export const mapAsciiToBits = (c: number): number => {
@@ -50,6 +50,9 @@ export class WritingBitBuffer {
     public writeUIntBitsBE(this: WritingBitBuffer, length: number, value: number): void {
         if (length < 1 || length > 52) {
             throw new Error('length must be between 1 and 52: ' + length);
+        }
+        if (this.offset + length > this.size) {
+            throw new Error('overflow!');
         }
         if (value < 0) {
             throw new Error('value must be positive: ' + value);

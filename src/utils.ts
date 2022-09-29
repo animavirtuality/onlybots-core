@@ -1,35 +1,38 @@
 import { Point3 } from '@/point';
 
 export const calculateVoxelBounds = (voxels: Point3[]): { min: Point3; max: Point3 } => {
-    const min = new Point3(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
-    const max = new Point3(Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER);
+    if (voxels.length <= 0) {
+        throw new Error('Cannot find bounds of empty voxel list!');
+    }
+    const min: { x?: number; y?: number; z?: number } = {};
+    const max: { x?: number; y?: number; z?: number } = {};
 
     voxels.forEach((coord) => {
-        min.x = Math.min(min.x, coord.x);
-        min.y = Math.min(min.y, coord.y);
-        min.z = Math.min(min.z, coord.z);
-        max.x = Math.max(max.x, coord.x);
-        max.y = Math.max(max.y, coord.y);
-        max.z = Math.max(max.z, coord.z);
+        min.x = Math.min(min.x ?? coord.x, coord.x);
+        min.y = Math.min(min.y ?? coord.y, coord.y);
+        min.z = Math.min(min.z ?? coord.z, coord.z);
+        max.x = Math.max(max.x ?? coord.x, coord.x);
+        max.y = Math.max(max.y ?? coord.y, coord.y);
+        max.z = Math.max(max.z ?? coord.z, coord.z);
     });
 
-    if (min.x === Number.MAX_SAFE_INTEGER) {
-        throw new Error('Unset x min');
+    if (min.x === undefined || isNaN(min.x)) {
+        throw new Error(`Invalid x min: ${min.x}`);
     }
-    if (max.x === Number.MIN_SAFE_INTEGER) {
-        throw new Error('Unset x max');
+    if (max.x === undefined || isNaN(max.x)) {
+        throw new Error(`Invalid x max: ${max.x}`);
     }
-    if (min.y === Number.MAX_SAFE_INTEGER) {
-        throw new Error('Unset y min');
+    if (min.y === undefined || isNaN(min.y)) {
+        throw new Error(`Invalid y min: ${min.y}`);
     }
-    if (max.y === Number.MIN_SAFE_INTEGER) {
-        throw new Error('Unset y max');
+    if (max.y === undefined || isNaN(max.y)) {
+        throw new Error(`Invalid y max: ${max.y}`);
     }
-    if (min.z === Number.MAX_SAFE_INTEGER) {
-        throw new Error('Unset z min');
+    if (min.z === undefined || isNaN(min.z)) {
+        throw new Error(`Invalid z min: ${min.z}`);
     }
-    if (max.z === Number.MIN_SAFE_INTEGER) {
-        throw new Error('Unset z max');
+    if (max.z === undefined || isNaN(max.z)) {
+        throw new Error(`Invalid z max: ${max.z}`);
     }
 
     if (min.x < 0) {
@@ -53,8 +56,8 @@ export const calculateVoxelBounds = (voxels: Point3[]): { min: Point3; max: Poin
     }
 
     return {
-        min,
-        max,
+        min: new Point3(min.x, min.y, min.z),
+        max: new Point3(max.x, max.y, max.z),
     };
 };
 
