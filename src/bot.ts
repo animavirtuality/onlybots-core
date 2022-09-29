@@ -31,7 +31,7 @@ export type OnlyBotLayer = {
     voxels: Point3[];
 };
 
-const OnlyBotJson = t.Record({
+export const OnlyBotJson = t.Record({
     name: t.String,
     anchor: t.Record({
         x: t.Number,
@@ -52,6 +52,20 @@ const OnlyBotJson = t.Record({
         })
     ),
 });
+export type OnlyBotJson = t.Static<typeof OnlyBotJson>;
+
+export type OpenseaAttribute = {
+    trait_type?: string;
+    display_type?: 'number' | 'date' | 'boost_number' | 'boost_percentage';
+    value: string | number;
+};
+
+export type OnlyBotMetadata = {
+    name: string;
+    image: string;
+    attributes: OpenseaAttribute[];
+    bot: OnlyBotJson;
+};
 
 export class OnlyBot {
     public readonly name: string;

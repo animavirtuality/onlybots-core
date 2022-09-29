@@ -3,7 +3,7 @@ import { OnlyBot, OnlyBotLayer, OnlyBotMaterial } from '@/bot';
 import { mapAsciiToBits, mapBitsToAscii, ReadingBitBuffer, WritingBitBuffer } from '@/bits';
 import { calculateVoxelBounds, packVoxelSpace } from '@/utils';
 
-const BITS = {
+export const BIT_LENGTH = {
     COLOR_COUNT: 9,
     COLOR_RGB: 8,
     BOT_LENGTH: 12,
@@ -54,22 +54,22 @@ export class CompressedLayer {
     }
 
     public static compress(layer: OnlyBotLayer): CompressedLayer {
-        // clone the coordinates
         if (layer.voxels.length < 1) {
             throw new Error('Layer has no voxels!');
         }
-        const coords = layer.voxels.map((voxel) => voxel.clone());
-        const origin = calculateVoxelBounds(coords).min;
+        // clone the coordinates because we're about to pack them
+        const voxels = layer.voxels.map((voxel) => voxel.clone());
+        const origin = calculateVoxelBounds(voxels).min;
 
-        const max = packVoxelSpace(coords);
+        const max = packVoxelSpace(voxels);
         const length = max.toLength();
 
-        return new CompressedLayer(layer.type, layer.material, CompressedLayerData.compress(origin, length, coords));
+        return new CompressedLayer(layer.type, layer.material, CompressedLayerData.compress(origin, length, voxels));
     }
 
     public static fromBuffer(buffer: ReadingBitBuffer): CompressedLayer {
-        const type = buffer.readUIntBitsBE(BITS.LAYER_TYPE);
-        const material = buffer.readUIntBitsBE(BITS.LAYER_MATERIAL);
+        const type = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_TYPE);
+        const material = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_MATERIAL);
         const data = CompressedLayerData.fromBuffer(buffer);
 
         return new CompressedLayer(type, material, data);
@@ -77,15 +77,15 @@ export class CompressedLayer {
 
     public compressedSizeInBits(this: CompressedLayer): number {
         let size = 0;
-        size += BITS.LAYER_TYPE;
-        size += BITS.LAYER_MATERIAL;
+        size += BIT_LENGTH.LAYER_TYPE;
+        size += BIT_LENGTH.LAYER_MATERIAL;
         size += this.data.compressedSizeInBits();
         return size;
     }
 
     public toBuffer(this: CompressedLayer, buffer: WritingBitBuffer): void {
-        buffer.writeUIntBitsBE(BITS.LAYER_TYPE, this.type);
-        buffer.writeUIntBitsBE(BITS.LAYER_MATERIAL, this.material);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_TYPE, this.type);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_MATERIAL, this.material);
         this.data.toBuffer(buffer);
     }
 
@@ -120,13 +120,13 @@ export abstract class CompressedLayerData {
     }
 
     public static fromBuffer(buffer: ReadingBitBuffer): CompressedLayerData {
-        const coordinateBitSize = buffer.readUIntBitsBE(BITS.FOURBIT_FLAG) > 0 ? 4 : 3;
+        const coordinateBitSize = buffer.readUIntBitsBE(BIT_LENGTH.FOURBIT_FLAG) > 0 ? 4 : 3;
         const origin = new Point3(
-            buffer.readUIntBitsBE(BITS.ORIGIN),
-            buffer.readUIntBitsBE(BITS.ORIGIN),
-            buffer.readUIntBitsBE(BITS.ORIGIN)
+            buffer.readUIntBitsBE(BIT_LENGTH.ORIGIN),
+            buffer.readUIntBitsBE(BIT_LENGTH.ORIGIN),
+            buffer.readUIntBitsBE(BIT_LENGTH.ORIGIN)
         );
-        const format = buffer.readUIntBitsBE(BITS.FORMAT_FLAG);
+        const format = buffer.readUIntBitsBE(BIT_LENGTH.FORMAT_FLAG);
 
         return format
             ? CompressedLayerDataList.fromBufferWithOrigin(buffer, coordinateBitSize, origin)
@@ -139,18 +139,18 @@ export abstract class CompressedLayerData {
 
     public compressedSizeInBits(): number {
         let size = 0;
-        size += BITS.FOURBIT_FLAG;
-        size += 3 * BITS.ORIGIN;
-        size += BITS.FORMAT_FLAG;
+        size += BIT_LENGTH.FOURBIT_FLAG;
+        size += 3 * BIT_LENGTH.ORIGIN;
+        size += BIT_LENGTH.FORMAT_FLAG;
         return size;
     }
 
     public toBuffer(buffer: WritingBitBuffer): void {
-        buffer.writeUIntBitsBE(BITS.FOURBIT_FLAG, this.fourbit ? 1 : 0);
-        buffer.writeUIntBitsBE(BITS.ORIGIN, this.origin.x);
-        buffer.writeUIntBitsBE(BITS.ORIGIN, this.origin.y);
-        buffer.writeUIntBitsBE(BITS.ORIGIN, this.origin.z);
-        buffer.writeUIntBitsBE(BITS.FORMAT_FLAG, this.format ? 1 : 0);
+        buffer.writeUIntBitsBE(BIT_LENGTH.FOURBIT_FLAG, this.fourbit ? 1 : 0);
+        buffer.writeUIntBitsBE(BIT_LENGTH.ORIGIN, this.origin.x);
+        buffer.writeUIntBitsBE(BIT_LENGTH.ORIGIN, this.origin.y);
+        buffer.writeUIntBitsBE(BIT_LENGTH.ORIGIN, this.origin.z);
+        buffer.writeUIntBitsBE(BIT_LENGTH.FORMAT_FLAG, this.format ? 1 : 0);
     }
 
     public expand(this: CompressedLayerData): Point3[] {
@@ -201,7 +201,7 @@ export class CompressedLayerDataField extends CompressedLayerData {
         for (let x = 0; x < field.length.x; x++) {
             for (let y = 0; y < field.length.y; y++) {
                 for (let z = 0; z < field.length.z; z++) {
-                    field.xyz[x][y][z] = buffer.readUIntBitsBE(BITS.FIELD_FLAG) > 0;
+                    field.xyz[x][y][z] = buffer.readUIntBitsBE(BIT_LENGTH.FIELD_FLAG) > 0;
                 }
             }
         }
@@ -211,7 +211,7 @@ export class CompressedLayerDataField extends CompressedLayerData {
     public compressedSizeInBits(this: CompressedLayerDataField): number {
         let size = super.compressedSizeInBits();
         size += 3 * this.coordinateBitSize();
-        size += this.field.length.x * this.field.length.y * this.field.length.z * BITS.FIELD_FLAG;
+        size += this.field.length.x * this.field.length.y * this.field.length.z * BIT_LENGTH.FIELD_FLAG;
         return size;
     }
 
@@ -225,7 +225,7 @@ export class CompressedLayerDataField extends CompressedLayerData {
         for (let x = 0; x < this.field.length.x; x++) {
             for (let y = 0; y < this.field.length.y; y++) {
                 for (let z = 0; z < this.field.length.z; z++) {
-                    buffer.writeUIntBitsBE(BITS.FIELD_FLAG, this.field.xyz[x][y][z] ? 1 : 0);
+                    buffer.writeUIntBitsBE(BIT_LENGTH.FIELD_FLAG, this.field.xyz[x][y][z] ? 1 : 0);
                 }
             }
         }
@@ -289,8 +289,8 @@ export class CompressedLayerDataList extends CompressedLayerData {
         coordinateBitSize: number,
         origin: Point3
     ): CompressedLayerDataList {
-        const direction = buffer.readUIntBitsBE(BITS.DIRECTION);
-        const length = buffer.readUIntBitsBE(BITS.LAYER_LIST_COUNT) + 1;
+        const direction = buffer.readUIntBitsBE(BIT_LENGTH.DIRECTION);
+        const length = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_LIST_COUNT) + 1;
         const coords: (Point2 | Point3)[] = [];
 
         if (direction === CompressedLayerDataList.DIRECTION_XYZ) {
@@ -315,13 +315,13 @@ export class CompressedLayerDataList extends CompressedLayerData {
     }
 
     public overflow(this: CompressedLayerDataList): boolean {
-        return this.coords.length > Math.pow(2, BITS.LAYER_LIST_COUNT + 1) - 1;
+        return this.coords.length > Math.pow(2, BIT_LENGTH.LAYER_LIST_COUNT + 1) - 1;
     }
 
     public compressedSizeInBits(this: CompressedLayerDataList): number {
         let size = super.compressedSizeInBits();
-        size += BITS.DIRECTION;
-        size += BITS.LAYER_LIST_COUNT;
+        size += BIT_LENGTH.DIRECTION;
+        size += BIT_LENGTH.LAYER_LIST_COUNT;
         size += this.coords.length * this.coordinateBitSize() * (this.direction === 0 ? 3 : 2);
         return size;
     }
@@ -329,11 +329,11 @@ export class CompressedLayerDataList extends CompressedLayerData {
     public toBuffer(buffer: WritingBitBuffer): void {
         super.toBuffer(buffer);
         const coordinateBitSize = this.coordinateBitSize();
-        buffer.writeUIntBitsBE(BITS.DIRECTION, this.direction);
+        buffer.writeUIntBitsBE(BIT_LENGTH.DIRECTION, this.direction);
         if (this.coords.length < 1) {
             throw new Error('LayerDataList must have at least one coordinate');
         }
-        buffer.writeUIntBitsBE(BITS.LAYER_LIST_COUNT, this.coords.length - 1);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_LIST_COUNT, this.coords.length - 1);
 
         this.coords.forEach((coord) => {
             buffer.writeUIntBitsBE(coordinateBitSize, coord.x);
@@ -410,26 +410,28 @@ export class CompressedBot {
     }
 
     public static fromBuffer(buffer: ReadingBitBuffer): CompressedBot {
-        const nameLength = buffer.readUIntBitsBE(BITS.NAME_COUNT) + 1;
+        const nameLength = buffer.readUIntBitsBE(BIT_LENGTH.NAME_COUNT) + 1;
         const nameBuffer = Buffer.alloc(nameLength);
         for (let i = 0; i < nameLength; i++) {
-            nameBuffer.writeUInt8(mapBitsToAscii(buffer.readUIntBitsBE(BITS.NAME_CHAR)), i);
+            nameBuffer.writeUInt8(mapBitsToAscii(buffer.readUIntBitsBE(BIT_LENGTH.NAME_CHAR)), i);
         }
         const name = nameBuffer.toString('ascii');
 
         const anchor: [number, number, number] = [
-            (buffer.readUIntBitsBE(BITS.ANCHOR_XZ_SIGN) === 0 ? -1 : 1) * buffer.readUIntBitsBE(BITS.ANCHOR_X),
-            buffer.readUIntBitsBE(BITS.ANCHOR_Y),
-            (buffer.readUIntBitsBE(BITS.ANCHOR_XZ_SIGN) === 0 ? -1 : 1) * buffer.readUIntBitsBE(BITS.ANCHOR_Z),
+            (buffer.readUIntBitsBE(BIT_LENGTH.ANCHOR_XZ_SIGN) === 0 ? -1 : 1) *
+                buffer.readUIntBitsBE(BIT_LENGTH.ANCHOR_X),
+            buffer.readUIntBitsBE(BIT_LENGTH.ANCHOR_Y),
+            (buffer.readUIntBitsBE(BIT_LENGTH.ANCHOR_XZ_SIGN) === 0 ? -1 : 1) *
+                buffer.readUIntBitsBE(BIT_LENGTH.ANCHOR_Z),
         ];
-        const materialCount = buffer.readUIntBitsBE(BITS.MATERIAL_COUNT) + 1;
+        const materialCount = buffer.readUIntBitsBE(BIT_LENGTH.MATERIAL_COUNT) + 1;
         const materials: CompressedMaterial[] = [];
         for (let i = 0; i < materialCount; i++) {
-            const color = buffer.readUIntBitsBE(BITS.MATERIAL_COLOR);
-            const shader = buffer.readUIntBitsBE(BITS.MATERIAL_SHADER);
+            const color = buffer.readUIntBitsBE(BIT_LENGTH.MATERIAL_COLOR);
+            const shader = buffer.readUIntBitsBE(BIT_LENGTH.MATERIAL_SHADER);
             materials.push({ color, shader });
         }
-        const layerCount = buffer.readUIntBitsBE(BITS.LAYER_COUNT) + 1;
+        const layerCount = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_COUNT) + 1;
         const layers: CompressedLayer[] = [];
         for (let i = 0; i < layerCount; i++) {
             layers.push(CompressedLayer.fromBuffer(buffer));
@@ -439,16 +441,16 @@ export class CompressedBot {
 
     public compressedSizeInBits(this: CompressedBot): number {
         let size = 0;
-        size += BITS.NAME_COUNT;
-        size += this.name.length * BITS.NAME_CHAR;
-        size += BITS.ANCHOR_XZ_SIGN;
-        size += BITS.ANCHOR_X;
-        size += BITS.ANCHOR_Y;
-        size += BITS.ANCHOR_XZ_SIGN;
-        size += BITS.ANCHOR_Z;
-        size += BITS.MATERIAL_COUNT;
-        size += this.materials.length * (BITS.MATERIAL_COLOR + BITS.MATERIAL_SHADER);
-        size += BITS.LAYER_COUNT;
+        size += BIT_LENGTH.NAME_COUNT;
+        size += this.name.length * BIT_LENGTH.NAME_CHAR;
+        size += BIT_LENGTH.ANCHOR_XZ_SIGN;
+        size += BIT_LENGTH.ANCHOR_X;
+        size += BIT_LENGTH.ANCHOR_Y;
+        size += BIT_LENGTH.ANCHOR_XZ_SIGN;
+        size += BIT_LENGTH.ANCHOR_Z;
+        size += BIT_LENGTH.MATERIAL_COUNT;
+        size += this.materials.length * (BIT_LENGTH.MATERIAL_COLOR + BIT_LENGTH.MATERIAL_SHADER);
+        size += BIT_LENGTH.LAYER_COUNT;
         size += this.layers.reduce((sum, layer) => sum + layer.compressedSizeInBits(), 0);
         return size;
     }
@@ -457,27 +459,27 @@ export class CompressedBot {
         if (this.name.length < 1) {
             throw new Error('Name must be at least one character long');
         }
-        buffer.writeUIntBitsBE(BITS.NAME_COUNT, this.name.length - 1);
+        buffer.writeUIntBitsBE(BIT_LENGTH.NAME_COUNT, this.name.length - 1);
         [...Buffer.from(this.name, 'ascii')].forEach((c) => {
-            buffer.writeUIntBitsBE(BITS.NAME_CHAR, mapAsciiToBits(c));
+            buffer.writeUIntBitsBE(BIT_LENGTH.NAME_CHAR, mapAsciiToBits(c));
         });
-        buffer.writeUIntBitsBE(BITS.ANCHOR_XZ_SIGN, this.anchor[0] < 0 ? 0 : 1);
-        buffer.writeUIntBitsBE(BITS.ANCHOR_X, Math.abs(this.anchor[0]));
-        buffer.writeUIntBitsBE(BITS.ANCHOR_Y, this.anchor[1]);
-        buffer.writeUIntBitsBE(BITS.ANCHOR_XZ_SIGN, this.anchor[2] < 0 ? 0 : 1);
-        buffer.writeUIntBitsBE(BITS.ANCHOR_Z, Math.abs(this.anchor[2]));
+        buffer.writeUIntBitsBE(BIT_LENGTH.ANCHOR_XZ_SIGN, this.anchor[0] < 0 ? 0 : 1);
+        buffer.writeUIntBitsBE(BIT_LENGTH.ANCHOR_X, Math.abs(this.anchor[0]));
+        buffer.writeUIntBitsBE(BIT_LENGTH.ANCHOR_Y, this.anchor[1]);
+        buffer.writeUIntBitsBE(BIT_LENGTH.ANCHOR_XZ_SIGN, this.anchor[2] < 0 ? 0 : 1);
+        buffer.writeUIntBitsBE(BIT_LENGTH.ANCHOR_Z, Math.abs(this.anchor[2]));
         if (this.materials.length < 1) {
             throw new Error('Must have at least one material');
         }
-        buffer.writeUIntBitsBE(BITS.MATERIAL_COUNT, this.materials.length - 1);
+        buffer.writeUIntBitsBE(BIT_LENGTH.MATERIAL_COUNT, this.materials.length - 1);
         this.materials.forEach((material) => {
-            buffer.writeUIntBitsBE(BITS.MATERIAL_COLOR, material.color);
-            buffer.writeUIntBitsBE(BITS.MATERIAL_SHADER, material.shader);
+            buffer.writeUIntBitsBE(BIT_LENGTH.MATERIAL_COLOR, material.color);
+            buffer.writeUIntBitsBE(BIT_LENGTH.MATERIAL_SHADER, material.shader);
         });
         if (this.layers.length < 1) {
             throw new Error('Must have at least one layer');
         }
-        buffer.writeUIntBitsBE(BITS.LAYER_COUNT, this.layers.length - 1);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_COUNT, this.layers.length - 1);
         this.layers.forEach((layer) => {
             layer.toBuffer(buffer);
         });
@@ -528,20 +530,20 @@ export class CompressedBots {
 
     public static fromBuffer(rawBuffer: Buffer): CompressedBots {
         const buffer = new ReadingBitBuffer(rawBuffer);
-        const colorCount = buffer.readUIntBitsBE(BITS.COLOR_COUNT) + 1;
+        const colorCount = buffer.readUIntBitsBE(BIT_LENGTH.COLOR_COUNT) + 1;
         const colors = [];
         for (let i = 0; i < colorCount; i++) {
             colors.push(
                 new CompressedColor(
-                    buffer.readUIntBitsBE(BITS.COLOR_RGB),
-                    buffer.readUIntBitsBE(BITS.COLOR_RGB),
-                    buffer.readUIntBitsBE(BITS.COLOR_RGB)
+                    buffer.readUIntBitsBE(BIT_LENGTH.COLOR_RGB),
+                    buffer.readUIntBitsBE(BIT_LENGTH.COLOR_RGB),
+                    buffer.readUIntBitsBE(BIT_LENGTH.COLOR_RGB)
                 )
             );
         }
         const bots = [];
-        while (buffer.hasRemaining(BITS.BOT_LENGTH)) {
-            const length = buffer.readUIntBitsBE(BITS.BOT_LENGTH);
+        while (buffer.hasRemaining(BIT_LENGTH.BOT_LENGTH)) {
+            const length = buffer.readUIntBitsBE(BIT_LENGTH.BOT_LENGTH);
             if (length === 0) {
                 continue;
             }
@@ -554,10 +556,10 @@ export class CompressedBots {
 
     public compressedSizeInBits(this: CompressedBots): number {
         let size = 0;
-        size += BITS.COLOR_COUNT;
-        size += this.colors.length * (BITS.COLOR_RGB * 3);
+        size += BIT_LENGTH.COLOR_COUNT;
+        size += this.colors.length * (BIT_LENGTH.COLOR_RGB * 3);
 
-        size += this.bots.length * BITS.BOT_LENGTH;
+        size += this.bots.length * BIT_LENGTH.BOT_LENGTH;
         size += this.bots.reduce((sum, bot) => sum + bot.compressedSizeInBits(), 0);
         return size;
     }
@@ -567,14 +569,14 @@ export class CompressedBots {
         if (this.colors.length < 1) {
             throw new Error('No colors');
         }
-        buffer.writeUIntBitsBE(BITS.COLOR_COUNT, this.colors.length - 1);
+        buffer.writeUIntBitsBE(BIT_LENGTH.COLOR_COUNT, this.colors.length - 1);
         this.colors.forEach(({ r, g, b }) => {
-            buffer.writeUIntBitsBE(BITS.COLOR_RGB, r);
-            buffer.writeUIntBitsBE(BITS.COLOR_RGB, g);
-            buffer.writeUIntBitsBE(BITS.COLOR_RGB, b);
+            buffer.writeUIntBitsBE(BIT_LENGTH.COLOR_RGB, r);
+            buffer.writeUIntBitsBE(BIT_LENGTH.COLOR_RGB, g);
+            buffer.writeUIntBitsBE(BIT_LENGTH.COLOR_RGB, b);
         });
         this.bots.forEach((bot) => {
-            buffer.writeUIntBitsBE(BITS.BOT_LENGTH, bot.compressedSizeInBits());
+            buffer.writeUIntBitsBE(BIT_LENGTH.BOT_LENGTH, bot.compressedSizeInBits());
             bot.toBuffer(buffer);
         });
 

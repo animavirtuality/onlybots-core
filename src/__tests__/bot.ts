@@ -52,7 +52,10 @@ describe('OnlyBot', () => {
         ]);
 
         const indent = '  ';
-        expect(bot1.toJSON(indent)).toBe(bot2.toJSON(indent));
+        const json1 = bot1.toJSON(indent);
+        const json2 = bot2.toJSON(indent);
+        expect(json1).toBe(json2);
+        expect(() => JSON.parse(json1)).not.toThrow();
     });
 
     it('can flatten voxel list', () => {
