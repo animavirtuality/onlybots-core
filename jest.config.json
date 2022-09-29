@@ -1,13 +1,14 @@
 {
     "rootDir": "./src",
     "cacheDirectory": "<rootDir>/../build/jest-cache",
-    "testMatch": ["**/__tests__/**/*.ts", "**/__tests__/**/*.tsx"],
+    "testMatch": ["**/__tests__/**/*.ts", "**/__tests__/**/*.tsx", "!**/__tests__/setup.jest.ts"],
     "moduleFileExtensions": ["js", "jsx", "ts", "tsx"],
     "transform": {
         "^.+\\.tsx?$": [
             "ts-jest",
             {
-                "useESM": true
+                "useESM": true,
+                "tsconfig": "<rootDir>/../tsconfig.test.json"
             }
         ]
     },
@@ -17,5 +18,6 @@
     "collectCoverage": true,
     "coverageDirectory": "<rootDir>/../build/coverage",
     "coverageProvider": "v8",
-    "collectCoverageFrom": ["**/*.ts", "**/*.tsx"]
+    "collectCoverageFrom": ["**/*.ts", "**/*.tsx"],
+    "setupFilesAfterEnv": ["<rootDir>/__tests__/setup.jest.ts"]
 }

@@ -1,40 +1,41 @@
-import { describe, test } from '@jest/globals';
-import { expect } from 'chai';
+import { describe, it, expect } from '@jest/globals';
 import { OnlyBot, OnlyBotAnchor, OnlyBotMaterial } from '@/bot';
 import { Point3 } from '@/point';
 
 describe('OnlyBot', () => {
-    test('should construct a bot from valid json', () => {
-        OnlyBot.fromJSON({
-            name: 'bot',
-            anchor: {
-                x: 0,
-                y: 0,
-                z: 0,
-            },
-            materials: [
-                {
-                    color: [0, 0, 0],
-                    shader: 0,
+    it('should construct a bot from valid json', () => {
+        expect(() => {
+            OnlyBot.fromJSON({
+                name: 'bot',
+                anchor: {
+                    x: 0,
+                    y: 0,
+                    z: 0,
                 },
-            ],
-            layers: [
-                {
-                    type: 0,
-                    material: 0,
-                    voxels: [[0, 0, 0]],
-                },
-            ],
-        });
+                materials: [
+                    {
+                        color: [0, 0, 0],
+                        shader: 0,
+                    },
+                ],
+                layers: [
+                    {
+                        type: 0,
+                        material: 0,
+                        voxels: [[0, 0, 0]],
+                    },
+                ],
+            });
+        }).not.toThrow();
     });
 
-    test('should throw when given invalid json', () => {
+    it('should throw when given invalid json', () => {
         expect(() => {
             OnlyBot.fromJSON({});
-        }).to.throw('Validation failed:');
+        }).toThrow('Validation failed:');
     });
 
-    test('should serialize voxels stably', () => {
+    it('should serialize voxels stably', () => {
         const name = 'name';
         const anchor: OnlyBotAnchor = { x: 0, y: 0, z: 0 };
         const materials: OnlyBotMaterial[] = [{ color: [0, 0, 0], shader: 0 }];
@@ -51,6 +52,6 @@ describe('OnlyBot', () => {
         ]);
 
         const indent = '  ';
-        expect(bot1.toJSON(indent)).to.eq(bot2.toJSON(indent));
+        expect(bot1.toJSON(indent)).toEqual(bot2.toJSON(indent));
     });
 });

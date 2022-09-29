@@ -96,12 +96,16 @@ export class ReadingBitBuffer {
     }
 
     public hasRemaining(this: ReadingBitBuffer, length: number): boolean {
+        if (length < 1 || length > 52) {
+            throw new Error('length must be between 1 and 52: ' + length);
+        }
+
         return this.buffer.length * 8 - this.offset >= length;
     }
 
     public readUIntBitsBE(this: ReadingBitBuffer, length: number): number {
-        if (length < 1 || length > 52) {
-            throw new Error('length must be between 1 and 52: ' + length);
+        if (!this.hasRemaining(length)) {
+            throw new Error('overflow!');
         }
 
         const [bytes, bits] = splitBits(this.offset);
