@@ -5,8 +5,10 @@
   "license": "MIT",
   "description": "Core functionality for OnlyBots",
   "repository": {
-    "url": "https://github.com/animavirtuality/onlybots-core"
+    "type": "git",
+    "url": "git+https://github.com/animavirtuality/onlybots-core.git"
   },
+  "type": "module",
   "engines": {
     "node": ">=14"
   },
