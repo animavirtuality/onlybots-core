@@ -1,4 +1,4 @@
-import { Point2, Point3 } from '@/point';
+import { Point2, Point3, Point3Set } from '@/point';
 import { OnlyBot, OnlyBotLayer, OnlyBotMaterial } from '@/bot';
 import { mapAsciiToBits, mapBitsToAscii, ReadingBitBuffer, WritingBitBuffer } from '@/bits';
 import { calculateVoxelBounds, packVoxelSpace } from '@/utils';
@@ -27,21 +27,6 @@ export const BIT_LENGTH = {
     LAYER_LIST_COUNT: 6,
 };
 
-export class Field3 {
-    public readonly length: Point3;
-    public readonly xyz: boolean[][][];
-
-    constructor(length: Point3, voxels?: Point3[]) {
-        this.length = length;
-        this.xyz = Array.from(Array(length.x), () => Array.from(Array(length.y), () => Array(length.z).fill(false)));
-        if (voxels) {
-            voxels.forEach((voxel) => {
-                this.xyz[voxel.x][voxel.y][voxel.z] = true;
-            });
-        }
-    }
-}
-
 export class CompressedLayer {
     public readonly type: number;
     public readonly material: number;
@@ -57,7 +42,7 @@ export class CompressedLayer {
         if (layer.voxels.length < 1) {
             throw new Error('Layer has no voxels!');
         }
-        // clone the coordinates because we're about to pack them
+        // clone the points because we're about to pack them
         const voxels = layer.voxels.map((voxel) => voxel.clone());
         const origin = calculateVoxelBounds(voxels).min;
 
@@ -110,9 +95,9 @@ export abstract class CompressedLayerData {
         this.origin = origin;
     }
 
-    public static compress(origin: Point3, length: Point3, coords: Point3[]): CompressedLayerData {
-        const dataField = CompressedLayerDataField.compress(origin, length, coords);
-        const dataList = CompressedLayerDataList.compress(origin, length, coords);
+    public static compress(origin: Point3, length: Point3, voxels: Point3[]): CompressedLayerData {
+        const dataField = CompressedLayerDataField.compress(origin, length, voxels);
+        const dataList = CompressedLayerDataList.compress(origin, length, voxels);
 
         return dataList.overflow() || dataField.compressedSizeInBits() < dataList.compressedSizeInBits()
             ? dataField
@@ -154,14 +139,14 @@ export abstract class CompressedLayerData {
     }
 
     public expand(this: CompressedLayerData): Point3[] {
-        const coords = this.expandRelative();
-        coords.forEach((coord) => {
-            coord.x += this.origin.x;
-            coord.y += this.origin.y;
-            coord.z += this.origin.z;
+        const voxels = this.expandRelative();
+        voxels.forEach((voxel) => {
+            voxel.x += this.origin.x;
+            voxel.y += this.origin.y;
+            voxel.z += this.origin.z;
         });
 
-        return coords;
+        return voxels;
     }
 
     public abstract expandRelative(this: CompressedLayerData): Point3[];
@@ -169,21 +154,23 @@ export abstract class CompressedLayerData {
 
 export class CompressedLayerDataField extends CompressedLayerData {
     public readonly format = false;
-    public readonly field: Field3;
+    public readonly length: Point3;
+    public readonly set: Point3Set;
 
-    constructor(origin: Point3, field: Field3) {
-        const fourbit = field.length.x >= 8 || field.length.y >= 8 || field.length.z >= 8;
+    constructor(origin: Point3, length: Point3, set: Point3Set) {
+        const fourbit = length.x >= 8 || length.y >= 8 || length.z >= 8;
         super(fourbit, origin);
-        this.field = field;
+        this.length = length;
+        this.set = set;
     }
 
-    public static compress(origin: Point3, length: Point3, coords: Point3[]): CompressedLayerDataField {
-        const field: Field3 = new Field3(length);
-        coords.forEach((coord) => {
-            field.xyz[coord.x][coord.y][coord.z] = true;
+    public static compress(origin: Point3, length: Point3, voxels: Point3[]): CompressedLayerDataField {
+        const set = new Point3Set();
+        voxels.forEach((voxel) => {
+            set.addPoint(voxel);
         });
 
-        return new CompressedLayerDataField(origin, field);
+        return new CompressedLayerDataField(origin, length, set);
     }
 
     public static fromBufferWithOrigin(
@@ -197,53 +184,56 @@ export class CompressedLayerDataField extends CompressedLayerData {
             buffer.readUIntBitsBE(coordinateBitSize)
         );
 
-        const field = new Field3(length);
-        for (let x = 0; x < field.length.x; x++) {
-            for (let y = 0; y < field.length.y; y++) {
-                for (let z = 0; z < field.length.z; z++) {
-                    field.xyz[x][y][z] = buffer.readUIntBitsBE(BIT_LENGTH.FIELD_FLAG) > 0;
+        const set = new Point3Set();
+        for (let x = 0; x < length.x; x++) {
+            for (let y = 0; y < length.y; y++) {
+                for (let z = 0; z < length.z; z++) {
+                    if (buffer.readUIntBitsBE(BIT_LENGTH.FIELD_FLAG) > 0) {
+                        set.add(x, y, z);
+                    }
                 }
             }
         }
-        return new CompressedLayerDataField(origin, field);
+        return new CompressedLayerDataField(origin, length, set);
     }
 
     public compressedSizeInBits(this: CompressedLayerDataField): number {
         let size = super.compressedSizeInBits();
         size += 3 * this.coordinateBitSize();
-        size += this.field.length.x * this.field.length.y * this.field.length.z * BIT_LENGTH.FIELD_FLAG;
+        size += this.length.x * this.length.y * this.length.z * BIT_LENGTH.FIELD_FLAG;
         return size;
     }
 
     public toBuffer(this: CompressedLayerDataField, buffer: WritingBitBuffer): void {
         super.toBuffer(buffer);
         const coordinateBitSize = this.coordinateBitSize();
-        buffer.writeUIntBitsBE(coordinateBitSize, this.field.length.x);
-        buffer.writeUIntBitsBE(coordinateBitSize, this.field.length.y);
-        buffer.writeUIntBitsBE(coordinateBitSize, this.field.length.z);
+        buffer.writeUIntBitsBE(coordinateBitSize, this.length.x);
+        buffer.writeUIntBitsBE(coordinateBitSize, this.length.y);
+        buffer.writeUIntBitsBE(coordinateBitSize, this.length.z);
 
-        for (let x = 0; x < this.field.length.x; x++) {
-            for (let y = 0; y < this.field.length.y; y++) {
-                for (let z = 0; z < this.field.length.z; z++) {
-                    buffer.writeUIntBitsBE(BIT_LENGTH.FIELD_FLAG, this.field.xyz[x][y][z] ? 1 : 0);
+        for (let x = 0; x < this.length.x; x++) {
+            for (let y = 0; y < this.length.y; y++) {
+                for (let z = 0; z < this.length.z; z++) {
+                    buffer.writeUIntBitsBE(BIT_LENGTH.FIELD_FLAG, this.set.has(x, y, z) ? 1 : 0);
                 }
             }
         }
     }
 
     expandRelative(): Point3[] {
-        const coords: Point3[] = [];
-        for (let x = 0; x < this.field.length.x; x++) {
-            for (let y = 0; y < this.field.length.y; y++) {
-                for (let z = 0; z < this.field.length.z; z++) {
-                    if (this.field.xyz[x][y][z]) {
-                        coords.push(new Point3(x, y, z));
+        const voxels: Point3[] = [];
+        for (let x = 0; x < this.length.x; x++) {
+            for (let y = 0; y < this.length.y; y++) {
+                for (let z = 0; z < this.length.z; z++) {
+                    const point = new Point3(x, y, z);
+                    if (this.set.hasPoint(point)) {
+                        voxels.push(point);
                     }
                 }
             }
         }
 
-        return coords;
+        return voxels;
     }
 }
 
@@ -255,30 +245,30 @@ export class CompressedLayerDataList extends CompressedLayerData {
 
     public readonly format = true;
     public readonly direction: number; // 0: 3d, 1: yz, 2: xz, 3: xy
-    public readonly coords: Point2[] | Point3[];
+    public readonly voxels: Point2[] | Point3[];
 
-    constructor(origin: Point3, direction: number, coords: Point2[] | Point3[]) {
-        const fourbit = coords.some((coord) => coord.x > 8 || coord.y > 8 || (coord instanceof Point3 && coord.z > 8));
+    constructor(origin: Point3, direction: number, voxels: Point2[] | Point3[]) {
+        const fourbit = voxels.some((voxel) => voxel.x > 8 || voxel.y > 8 || (voxel instanceof Point3 && voxel.z > 8));
         super(fourbit, origin);
         this.direction = direction;
-        this.coords = coords;
+        this.voxels = voxels;
     }
 
-    public static compress(origin: Point3, length: Point3, coords: Point3[]): CompressedLayerDataList {
+    public static compress(origin: Point3, length: Point3, voxels: Point3[]): CompressedLayerDataList {
         let direction;
         let list: Point2[] | Point3[];
         if (length.x === 1) {
             direction = CompressedLayerDataList.DIRECTION_YZ;
-            list = coords.map((coord) => new Point2(coord.y, coord.z));
+            list = voxels.map((voxel) => new Point2(voxel.y, voxel.z));
         } else if (length.y === 1) {
             direction = CompressedLayerDataList.DIRECTION_XZ;
-            list = coords.map((coord) => new Point2(coord.x, coord.z));
+            list = voxels.map((voxel) => new Point2(voxel.x, voxel.z));
         } else if (length.z === 1) {
             direction = CompressedLayerDataList.DIRECTION_XY;
-            list = coords.map((coord) => new Point2(coord.x, coord.y));
+            list = voxels.map((voxel) => new Point2(voxel.x, voxel.y));
         } else {
             direction = CompressedLayerDataList.DIRECTION_XYZ;
-            list = coords;
+            list = voxels;
         }
 
         return new CompressedLayerDataList(origin, direction, list);
@@ -291,11 +281,11 @@ export class CompressedLayerDataList extends CompressedLayerData {
     ): CompressedLayerDataList {
         const direction = buffer.readUIntBitsBE(BIT_LENGTH.DIRECTION);
         const length = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_LIST_COUNT) + 1;
-        const coords: (Point2 | Point3)[] = [];
+        const voxels: (Point2 | Point3)[] = [];
 
         if (direction === CompressedLayerDataList.DIRECTION_XYZ) {
             for (let i = 0; i < length; i++) {
-                coords.push(
+                voxels.push(
                     new Point3(
                         buffer.readUIntBitsBE(coordinateBitSize),
                         buffer.readUIntBitsBE(coordinateBitSize),
@@ -305,24 +295,24 @@ export class CompressedLayerDataList extends CompressedLayerData {
             }
         } else {
             for (let i = 0; i < length; i++) {
-                coords.push(
+                voxels.push(
                     new Point2(buffer.readUIntBitsBE(coordinateBitSize), buffer.readUIntBitsBE(coordinateBitSize))
                 );
             }
         }
 
-        return new CompressedLayerDataList(origin, direction, coords);
+        return new CompressedLayerDataList(origin, direction, voxels);
     }
 
     public overflow(this: CompressedLayerDataList): boolean {
-        return this.coords.length > Math.pow(2, BIT_LENGTH.LAYER_LIST_COUNT + 1) - 1;
+        return this.voxels.length > Math.pow(2, BIT_LENGTH.LAYER_LIST_COUNT + 1) - 1;
     }
 
     public compressedSizeInBits(this: CompressedLayerDataList): number {
         let size = super.compressedSizeInBits();
         size += BIT_LENGTH.DIRECTION;
         size += BIT_LENGTH.LAYER_LIST_COUNT;
-        size += this.coords.length * this.coordinateBitSize() * (this.direction === 0 ? 3 : 2);
+        size += this.voxels.length * this.coordinateBitSize() * (this.direction === 0 ? 3 : 2);
         return size;
     }
 
@@ -330,33 +320,33 @@ export class CompressedLayerDataList extends CompressedLayerData {
         super.toBuffer(buffer);
         const coordinateBitSize = this.coordinateBitSize();
         buffer.writeUIntBitsBE(BIT_LENGTH.DIRECTION, this.direction);
-        if (this.coords.length < 1) {
-            throw new Error('LayerDataList must have at least one coordinate');
+        if (this.voxels.length < 1) {
+            throw new Error('LayerDataList must have at least one voxel');
         }
-        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_LIST_COUNT, this.coords.length - 1);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_LIST_COUNT, this.voxels.length - 1);
 
-        this.coords.forEach((coord) => {
-            buffer.writeUIntBitsBE(coordinateBitSize, coord.x);
-            buffer.writeUIntBitsBE(coordinateBitSize, coord.y);
-            if (coord instanceof Point3) {
-                buffer.writeUIntBitsBE(coordinateBitSize, coord.z);
+        this.voxels.forEach((voxels) => {
+            buffer.writeUIntBitsBE(coordinateBitSize, voxels.x);
+            buffer.writeUIntBitsBE(coordinateBitSize, voxels.y);
+            if (voxels instanceof Point3) {
+                buffer.writeUIntBitsBE(coordinateBitSize, voxels.z);
             }
         });
     }
 
     public expandRelative(): Point3[] {
-        let coords: Point3[];
+        let voxels: Point3[];
         if (this.direction === CompressedLayerDataList.DIRECTION_YZ) {
-            coords = this.coords.map((coord) => new Point3(0, coord.x, coord.y));
+            voxels = this.voxels.map((voxel) => new Point3(0, voxel.x, voxel.y));
         } else if (this.direction === CompressedLayerDataList.DIRECTION_XZ) {
-            coords = this.coords.map((coord) => new Point3(coord.x, 0, coord.y));
+            voxels = this.voxels.map((voxel) => new Point3(voxel.x, 0, voxel.y));
         } else if (this.direction === CompressedLayerDataList.DIRECTION_XY) {
-            coords = this.coords.map((coord) => new Point3(coord.x, coord.y, 0));
+            voxels = this.voxels.map((voxel) => new Point3(voxel.x, voxel.y, 0));
         } else {
-            coords = this.coords.map((coord) => new Point3(coord.x, coord.y, (coord as Point3).z));
+            voxels = this.voxels.map((voxel) => new Point3(voxel.x, voxel.y, (voxel as Point3).z));
         }
 
-        return coords;
+        return voxels;
     }
 }
 

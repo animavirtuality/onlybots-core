@@ -21,7 +21,7 @@ export class Point2 {
     }
 
     public toLength(this: Point2): Point2 {
-        return new Point2(this.x + 1, this.y + 1);
+        return new Point2(Math.abs(this.x) + 1, Math.abs(this.y) + 1);
     }
 }
 
@@ -48,6 +48,34 @@ export class Point3 extends Point2 {
     }
 
     public toLength(this: Point3): Point3 {
-        return new Point3(this.x + 1, this.y + 1, this.z + 1);
+        return new Point3(Math.abs(this.x) + 1, Math.abs(this.y) + 1, Math.abs(this.z) + 1);
+    }
+}
+
+export class Point3Set {
+    private readonly set = new Set<string>();
+
+    constructor(voxels?: Point3[]) {
+        if (voxels) {
+            voxels.forEach((voxel) => {
+                this.set.add(voxel.toString());
+            });
+        }
+    }
+
+    public addPoint(this: Point3Set, point: Point3): void {
+        this.set.add(point.toString());
+    }
+
+    public add(this: Point3Set, x: number, y: number, z: number): void {
+        this.addPoint(new Point3(x, y, z));
+    }
+
+    public hasPoint(this: Point3Set, point: Point3): boolean {
+        return this.set.has(point.toString());
+    }
+
+    public has(this: Point3Set, x: number, y: number, z: number): boolean {
+        return this.hasPoint(new Point3(x, y, z));
     }
 }

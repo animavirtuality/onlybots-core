@@ -7,13 +7,13 @@ export const calculateVoxelBounds = (voxels: Point3[]): { min: Point3; max: Poin
     const min: { x?: number; y?: number; z?: number } = {};
     const max: { x?: number; y?: number; z?: number } = {};
 
-    voxels.forEach((coord) => {
-        min.x = Math.min(min.x ?? coord.x, coord.x);
-        min.y = Math.min(min.y ?? coord.y, coord.y);
-        min.z = Math.min(min.z ?? coord.z, coord.z);
-        max.x = Math.max(max.x ?? coord.x, coord.x);
-        max.y = Math.max(max.y ?? coord.y, coord.y);
-        max.z = Math.max(max.z ?? coord.z, coord.z);
+    voxels.forEach((voxel) => {
+        min.x = Math.min(min.x ?? voxel.x, voxel.x);
+        min.y = Math.min(min.y ?? voxel.y, voxel.y);
+        min.z = Math.min(min.z ?? voxel.z, voxel.z);
+        max.x = Math.max(max.x ?? voxel.x, voxel.x);
+        max.y = Math.max(max.y ?? voxel.y, voxel.y);
+        max.z = Math.max(max.z ?? voxel.z, voxel.z);
     });
 
     if (min.x === undefined || isNaN(min.x)) {
@@ -66,20 +66,20 @@ export const packVoxelSpace = (voxels: Point3[]): Point3 => {
 
     if (min.x !== 0) {
         const shift = min.x;
-        voxels.forEach((coord) => {
-            coord.x -= shift;
+        voxels.forEach((voxel) => {
+            voxel.x -= shift;
         });
     }
     if (min.y !== 0) {
         const shift = min.y;
-        voxels.forEach((coord) => {
-            coord.y -= shift;
+        voxels.forEach((voxel) => {
+            voxel.y -= shift;
         });
     }
     if (min.z !== 0) {
         const shift = min.z;
-        voxels.forEach((coord) => {
-            coord.z -= shift;
+        voxels.forEach((voxel) => {
+            voxel.z -= shift;
         });
     }
 
