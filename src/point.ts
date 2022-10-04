@@ -52,21 +52,21 @@ export class Point3 extends Point2 {
     }
 }
 
-const uniquePointString = (x: number, y: number, z: number): string =>
-    `${x.toString(10)}||${y.toString(10)}||${z.toString(10)}`;
 export class Point3Set {
-    private readonly set = new Set<string>();
+    private readonly set: Record<number, Record<number, Record<number, boolean>>> = {};
 
     constructor(voxels?: Point3[]) {
         if (voxels) {
             voxels.forEach((voxel) => {
-                this.set.add(uniquePointString(voxel.x, voxel.y, voxel.z));
+                this.addPoint(voxel);
             });
         }
     }
 
     public add(this: Point3Set, x: number, y: number, z: number): void {
-        this.set.add(uniquePointString(x, y, z));
+        this.set[x] ??= {};
+        this.set[x][y] ??= {};
+        this.set[x][y][z] = true;
     }
 
     public addPoint(this: Point3Set, point: Point3): void {
@@ -74,7 +74,7 @@ export class Point3Set {
     }
 
     public has(this: Point3Set, x: number, y: number, z: number): boolean {
-        return this.set.has(uniquePointString(x, y, z));
+        return this.set[x]?.[y]?.[z] ?? false;
     }
 
     public hasPoint(this: Point3Set, point: Point3): boolean {
