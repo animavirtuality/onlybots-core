@@ -293,7 +293,7 @@ _Note: the docs below are not exhaustive, but should cover the most common use c
 
 ### `OnlyBot`
 
-> A helper class that wraps the JSON format of a single bot.
+A helper class that wraps the JSON format of a single bot.
 
 ________________________________________________________________________________________________________________________
 #### Properties
