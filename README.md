@@ -168,7 +168,7 @@ The y value of the JSON anchor can be between `0` and `7` (inclusive), and moves
 
 #### materials
 
-An array of 1 to 4 materials used by the bot.
+A list of 1 to 4 materials used by the bot.
 Each material consists of an RGB color and a shader index.
 The shader index is used to determine how the material is rendered, indexing into a pre-defined list.
 
@@ -181,7 +181,7 @@ Each bot consists of at least one and up to 32 individual layers.
 Each layer consists of the following:
 * `type`: Which part of the bot this layer is for.
 * `material`: The index of the material to use for this layer.  See `materials` above.
-* `voxels`: An array of `x`, `y`, and `z` values that define the voxels that make up this layer.
+* `voxels`: A list of `x`, `y`, and `z` values that define the voxels that make up this layer.
 
 The layer type is a value between `0` and `5` (inclusive):
 
@@ -195,3 +195,69 @@ The layer type is a value between `0` and `5` (inclusive):
 | 5     | tail |
 
 The layer type can be used to render or animate layers differently, or can be ignored entirely.
+
+## Binary Format
+
+The binary format is a direct representation of the JSON format, for deploying bots to the blockchain with as little gas as possible.
+All the requirements for values in the JSON format are directly derived from assumptions made in the binary format that allow for the smallest possible encoding.
+
+Documentation for the binary format is included here for completeness and for advanced users of this module, but it is not recommended to use the binary format directly.
+Instead, use the provided `CompressedBots.compress()`, `CompressedBots.expand()`, `CompressedBots.toBuffer()` and `CompressedBots.fromBuffer()` methods to convert between the binary and JSON formats if necessary.
+
+### Example
+
+```
+0x01ff8000007f8000007fffffff91b382e9cf1a6082e994022404700000040404040302480242b2ffffffe31ffe31ffe31ffffff942a024ca550126a0210935190849b820628ee2818a3cc2c2294ccac2294dc66c2560
+```
+
+### Structure
+
+The binary format is a sequence of values, where each value is a specific width _in bits_ and order is deterministic.
+The width of each value can be found in the [BIT_LENGTH](./src/compressed.ts#L6-L28) record.
+Note that some languages (such as JavaScript) don't have native support for reading and writing values of arbitrary bit widths, or at arbitrary bit offsets.
+
+When compressing multiple bots, the colors from each material in the bot are concatenated together into a single list of colors and deduplicated.
+In the binary format, each material no longer has a color, but instead has an index into the shared color list.
+This remains the case even when a single bot is compressed, as the format is optimized for deploying many bots at once.
+
+Therefore, the structure of the binary format is as follows:
+* `COLOR_COUNT`: the number of colors that directly follow
+* a list of colors:
+    * `COLOR_RGB`: the red component of the color
+    * `COLOR_RGB`: the green component of the color
+    * `COLOR_RGB`: the blue component of the color
+* a list of bots - list end is inferred when buffer ends or bot length is `0` (buffer is padded with `0` to align to a byte boundary):
+    * `BOT_LENGTH`: the length in bits of the bot: used to traverse the list when choosing a specific bot
+    * `NAME_COUNT`: the number of characters in the bot's name
+    * a list of characters:
+        * `NAME_CHAR`: a character, encoded with `mapAsciiToBits` and decoded with `mapBitsToAscii`
+    * `ANCHOR_XZ_SIGN`: the sign (+ or -) of the x value of the anchor
+    * `ANCHOR_X`: the absolute value of the x value of the anchor
+    * `ANCHOR_Y`: the y value of the anchor
+    * `ANCHOR_XZ_SIGN`: the sign (+ or -) of the z value of the anchor
+    * `ANCHOR_Z`: the absolute value of the z value of the anchor
+    * `MATERIAL_COUNT`: the number of materials that directly follow
+    * a list of materials:
+        * `MATERIAL_COLOR`: the index of the material's color in the color list
+        * `MATERIAL_SHADER`: the index of the material's shader
+    * `LAYER_COUNT`: the number of layers that directly follow
+    * `LAYER_TYPE`: the type of the layer
+    * `LAYER_MATERIAL`: the index of the layer's material in the material list
+    * `FOURBIT_FLAG`: a flag that indicates whether voxel coordinates are `3` (`false`) or `4` (`true`) bits wide
+    * `ORIGIN`: the x value of the origin that the layer voxels are relative to
+    * `ORIGIN`: the y value of the origin that the layer voxels are relative to
+    * `ORIGIN`: the z value of the origin that the layer voxels are relative to
+    * `FORMAT_FLAG`: a flag that indicates whether the layer voxels are encoded as a list or field
+    * if list (`true`):
+        * `DIRECTION`: whether voxels that follow are in `x,y,z`, `y,z`, `x,z`, or `x,y` form.  For 2d voxels, missing coordinate is equal to origin value for that axis.
+        * `LAYER_LIST_COUNT`: the number of voxels that directly follow
+        * for each voxel:
+            * `coordinateBitSize`: the first coordinate
+            * `coordinateBitSize`: the second coordinate
+            * if direction is `x,y,z`:
+                * `coordinateBitSize`: the third coordinate
+    * if field (`false`):
+        * `coordinateBitSize`: the length of the field along the x-axis
+        * `coordinateBitSize`: the length of the field along the y-axis
+        * `coordinateBitSize`: the length of the field along the z-axis
+        * a bit-field of size `length.x` * `length.y` * `length.z` that indicates whether a voxel is present at that position by `field[x][y][z] === 1`
