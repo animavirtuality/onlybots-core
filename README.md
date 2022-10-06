@@ -20,15 +20,7 @@ This module contains functions and classes that assist in handling the JSON and 
 - [Usage](#usage)
   * [`OnlyBot`](#onlybot)
     + [Properties](#properties)
-      - [`name: string`](#name-string)
-      - [`anchor: { x: number, y: number, z: number }`](#anchor--x-number-y-number-z-number-)
-      - [`materials: { color: [number, number, number], shader: number }[]`](#materials--color-number-number-number-shader-number-)
-      - [`layers: { type: number, material: number, voxels: [number, number, number][]`](#layers--type-number-material-number-voxels-number-number-number)
     + [Methods](#methods)
-      - [`constructor(name: string, anchor: OnlyBotAnchor, materials: OnlyBotMaterial[], layers: OnlyBotLayer[])`](#constructorname-string-anchor-onlybotanchor-materials-onlybotmaterial-layers-onlybotlayer)
-      - [`static fromJSON(json: unknown): OnlyBot`](#static-fromjsonjson-unknown-onlybot)
-      - [`toJSON(indent?: string): string`](#tojsonindent-string-string)
-      - [`voxels(): Point3[]`](#voxels-point3)
 
 <!-- tocstop -->
 

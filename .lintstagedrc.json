@@ -2,5 +2,5 @@
     "!*.{js,jsx,ts,tsx}": ["prettier --ignore-unknown --write"],
     "*.{js,jsx,ts,tsx}": ["prettier --write", "eslint"],
     "*.{ts,tsx}": ["/bin/sh -c 'tsc --noEmit'"],
-    "README.md": ["markdown-toc -i"]
+    "README.md": ["markdown-toc --maxdepth 4 -i"]
 }
