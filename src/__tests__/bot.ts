@@ -80,20 +80,18 @@ describe('OnlyBot', () => {
         expect(voxels.includes(voxel3)).toBe(true);
     });
 
-    it('packs voxels to 0,0,0', () => {
+    it('packs voxels to 0,0,0 in constructor', () => {
         const voxel1 = new Point3(2, 5, 12);
         const voxel2 = new Point3(15, 4, 9);
         const voxel3 = new Point3(7, 14, 8);
         const voxel4 = new Point3(10, 10, 10);
 
-        const bot = new OnlyBot(
+        new OnlyBot(
             '',
             { x: 0, y: 0, z: 0 },
             [{ color: [0, 0, 0], shader: 0 }],
             [{ type: 0, material: 0, voxels: [voxel1, voxel2, voxel3, voxel4] }]
         );
-
-        bot.pack();
 
         expect(voxel1.x).toBe(0);
         expect(voxel1.y).toBe(1);

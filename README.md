@@ -2,9 +2,39 @@
 
 This module contains functions and classes that assist in handling the JSON and binary format of OnlyBots, as well as converting between the two.
 
+## Table of Contents
+
+<!-- toc -->
+
+- [JSON Format](#json-format)
+  * [JSON Example](#json-example)
+  * [Coordinate System](#coordinate-system)
+  * [Fields](#fields)
+    + [name](#name)
+    + [anchor](#anchor)
+    + [materials](#materials)
+    + [layers](#layers)
+- [Binary Format](#binary-format)
+  * [Binary Example](#binary-example)
+  * [Structure](#structure)
+- [Usage](#usage)
+  * [`OnlyBot`](#onlybot)
+    + [Properties](#properties)
+      - [`name: string`](#name-string)
+      - [`anchor: { x: number, y: number, z: number }`](#anchor--x-number-y-number-z-number-)
+      - [`materials: { color: [number, number, number], shader: number }[]`](#materials--color-number-number-number-shader-number-)
+      - [`layers: { type: number, material: number, voxels: [number, number, number][]`](#layers--type-number-material-number-voxels-number-number-number)
+    + [Methods](#methods)
+      - [`constructor(name: string, anchor: OnlyBotAnchor, materials: OnlyBotMaterial[], layers: OnlyBotLayer[])`](#constructorname-string-anchor-onlybotanchor-materials-onlybotmaterial-layers-onlybotlayer)
+      - [`static fromJSON(json: unknown): OnlyBot`](#static-fromjsonjson-unknown-onlybot)
+      - [`toJSON(indent?: string): string`](#tojsonindent-string-string)
+      - [`voxels(): Point3[]`](#voxels-point3)
+
+<!-- tocstop -->
+
 ## JSON Format
 
-### Example
+### JSON Example
 
 ```json
 {
@@ -204,7 +234,7 @@ All the requirements for values in the JSON format are directly derived from ass
 Documentation for the binary format is included here for completeness and for advanced users of this module, but it is not recommended to use the binary format directly.
 Instead, use the provided `CompressedBots.compress()`, `CompressedBots.expand()`, `CompressedBots.toBuffer()` and `CompressedBots.fromBuffer()` methods to convert between the binary and JSON formats if necessary.
 
-### Example
+### Binary Example
 
 ```
 0x01ff8000007f8000007fffffff91b382e9cf1a6082e994022404700000040404040302480242b2ffffffe31ffe31ffe31ffffff942a024ca550126a0210935190849b820628ee2818a3cc2c2294ccac2294dc66c2560
@@ -266,3 +296,43 @@ Therefore, the structure of the binary format is as follows:
         * `coordinateBitSize`: the length of the field along the y-axis
         * `coordinateBitSize`: the length of the field along the z-axis
         * a bit-field of size `length.x` * `length.y` * `length.z` that indicates whether a voxel is present at that position by `field[x][y][z] === 1`
+
+## Usage
+
+```
+npm i @anima-virtuality/onlybots-core
+```
+
+_Note: the docs below are not exhaustive, but should cover the most common use cases._
+
+### `OnlyBot`
+
+> A helper class that wraps the JSON format of a single bot.
+
+________________________________________________________________________________________________________________________
+#### Properties
+
+##### `name: string`
+##### `anchor: { x: number, y: number, z: number }`
+##### `materials: { color: [number, number, number], shader: number }[]`
+##### `layers: { type: number, material: number, voxels: [number, number, number][]`
+
+________________________________________________________________________________________________________________________
+#### Methods
+
+##### `constructor(name: string, anchor: OnlyBotAnchor, materials: OnlyBotMaterial[], layers: OnlyBotLayer[])`
+
+> Creates a new `OnlyBot` instance.
+
+##### `static fromJSON(json: unknown): OnlyBot`
+
+> Uses [runtypes](https://github.com/pelotom/runtypes) to ensure that a javascript object has a valid bot structure, and then returns a new `OnlyBot` instance.
+> Note that this method accepts the result of `JSON.parse()` and not the raw JSON string.
+
+##### `toJSON(indent?: string): string`
+
+> Formats the bot as a JSON string.
+
+##### `voxels(): Point3[]`
+
+> Returns a flattened list of all voxels in all layers.  Keep in mind that the `Point3` class is _mutable_.

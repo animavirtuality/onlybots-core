@@ -72,16 +72,13 @@ export class OnlyBot {
     public readonly anchor: OnlyBotAnchor;
     public readonly materials: OnlyBotMaterial[];
     public readonly layers: OnlyBotLayer[];
-    public readonly max: Point3;
-    public readonly length: Point3;
 
     constructor(name: string, anchor: OnlyBotAnchor, materials: OnlyBotMaterial[], layers: OnlyBotLayer[]) {
         this.name = name;
         this.anchor = anchor;
         this.materials = materials;
         this.layers = layers;
-        this.max = packVoxelSpace(layers.flatMap((layer) => layer.voxels));
-        this.length = this.max.toLength();
+        packVoxelSpace(layers.flatMap((layer) => layer.voxels));
 
         // Sort layer voxels for comparing serialized forms
         this.layers.forEach((layer) => layer.voxels.sort((a, b) => a.x - b.x || a.y - b.y || a.z - b.z));
@@ -105,11 +102,6 @@ export class OnlyBot {
 
     public voxels(this: OnlyBot): Point3[] {
         return this.layers.flatMap((layer: OnlyBotLayer) => layer.voxels);
-    }
-
-    public pack(this: OnlyBot): void {
-        packVoxelSpace(this.voxels()).copyTo(this.max);
-        this.max.toLength().copyTo(this.length);
     }
 
     private indent(indent: string | undefined, level: number, line: string): string {
