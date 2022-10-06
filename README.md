@@ -14,7 +14,9 @@ This module contains functions and classes that assist in handling the JSON and 
   * [Binary Example](#binary-example)
   * [Structure](#structure)
 - [Usage](#usage)
+- [Reference](#reference)
   * [`OnlyBot`](#onlybot)
+  * [`CompressedBots`](#compressedbots)
 
 <!-- tocstop -->
 
@@ -289,13 +291,15 @@ Therefore, the structure of the binary format is as follows:
 npm i @anima-virtuality/onlybots-core
 ```
 
+## Reference
+
 _Note: the docs below are not exhaustive, but should cover the most common use cases._
 
+________________________________________________________________________________________________________________________
 ### `OnlyBot`
 
 A helper class that wraps the JSON format of a single bot.
 
-________________________________________________________________________________________________________________________
 #### Properties
 
 - `name: string`
@@ -303,15 +307,37 @@ ________________________________________________________________________________
 - `materials: { color: [number, number, number], shader: number }[]`
 - `layers: { type: number, material: number, voxels: [number, number, number][]`
 
-________________________________________________________________________________________________________________________
 #### Methods
 
-- `constructor(name: string, anchor: OnlyBotAnchor, materials: OnlyBotMaterial[], layers: OnlyBotLayer[])`
-    > Creates a new `OnlyBot` instance.
 - `static fromJSON(json: unknown): OnlyBot`
     > Uses [runtypes](https://github.com/pelotom/runtypes) to ensure that a javascript object has a valid bot structure, and then returns a new `OnlyBot` instance.
-    > Note that this method accepts the result of `JSON.parse()` and not the raw JSON string.
+    Note that this method accepts the result of `JSON.parse()` and not the raw JSON string.
+- `constructor(name: string, anchor: OnlyBotAnchor, materials: OnlyBotMaterial[], layers: OnlyBotLayer[])`
+  > Creates a new `OnlyBot` instance.
 - `toJSON(indent?: string): string`
     > Formats the bot as a JSON string.
 - `voxels(): Point3[]`
     > Returns a flattened list of all voxels in all layers.  Keep in mind that the `Point3` class is _mutable_.
+
+________________________________________________________________________________________________________________________
+### `CompressedBots`
+
+A helper class that can convert to and from the binary format for multiple bots.
+
+#### Properties
+
+- `static BIT_LENGTH: { ... }`
+    > A record of the bit lengths of each value in the binary format.
+
+#### Methods
+
+- `static compress(bots: OnlyBot[]): CompressedBots`
+    > Compresses a list of `OnlyBot` instances into a single `CompressedBots` instance.
+- `static fromBuffer(rawBuffer: Buffer): CompressedBots`
+    > Creates a new `CompressedBots` instance from a `Buffer` containing bots in binary format.
+- `compressedSizeInBits(this: CompressedBots): number`
+    > Calculates the size of the compressed bots in bits.
+- `toBuffer(this: CompressedBots): Buffer`
+    > Converts the compressed bots into a `Buffer` containing the binary format.
+- `expand(this: CompressedBots): OnlyBot[]`
+    > Converts the compressed bots into a list of `OnlyBot` instances.
