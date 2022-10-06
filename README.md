@@ -10,17 +10,11 @@ This module contains functions and classes that assist in handling the JSON and 
   * [JSON Example](#json-example)
   * [Coordinate System](#coordinate-system)
   * [Fields](#fields)
-    + [name](#name)
-    + [anchor](#anchor)
-    + [materials](#materials)
-    + [layers](#layers)
 - [Binary Format](#binary-format)
   * [Binary Example](#binary-example)
   * [Structure](#structure)
 - [Usage](#usage)
   * [`OnlyBot`](#onlybot)
-    + [Properties](#properties)
-    + [Methods](#methods)
 
 <!-- tocstop -->
 
