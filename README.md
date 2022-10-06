@@ -8,7 +8,7 @@ This module contains functions and classes that assist in handling the JSON and 
 
 ```json
 {
-  "name": "",
+  "name": "botty mcbotface",
   "anchor": { "x": 0, "y": 0, "z": 1 },
   "materials": [
     { "color": [255, 0, 0], "shader": 0 },
