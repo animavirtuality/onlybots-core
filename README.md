@@ -298,27 +298,30 @@ _Note: the docs below are not exhaustive, but should cover the most common use c
 ________________________________________________________________________________________________________________________
 #### Properties
 
-##### `name: string`
-##### `anchor: { x: number, y: number, z: number }`
-##### `materials: { color: [number, number, number], shader: number }[]`
-##### `layers: { type: number, material: number, voxels: [number, number, number][]`
+`name: string`
+
+`anchor: { x: number, y: number, z: number }`
+
+`materials: { color: [number, number, number], shader: number }[]`
+
+`layers: { type: number, material: number, voxels: [number, number, number][]`
 
 ________________________________________________________________________________________________________________________
 #### Methods
 
-##### `constructor(name: string, anchor: OnlyBotAnchor, materials: OnlyBotMaterial[], layers: OnlyBotLayer[])`
+`constructor(name: string, anchor: OnlyBotAnchor, materials: OnlyBotMaterial[], layers: OnlyBotLayer[])`
 
 > Creates a new `OnlyBot` instance.
 
-##### `static fromJSON(json: unknown): OnlyBot`
+`static fromJSON(json: unknown): OnlyBot`
 
 > Uses [runtypes](https://github.com/pelotom/runtypes) to ensure that a javascript object has a valid bot structure, and then returns a new `OnlyBot` instance.
 > Note that this method accepts the result of `JSON.parse()` and not the raw JSON string.
 
-##### `toJSON(indent?: string): string`
+`toJSON(indent?: string): string`
 
 > Formats the bot as a JSON string.
 
-##### `voxels(): Point3[]`
+`voxels(): Point3[]`
 
 > Returns a flattened list of all voxels in all layers.  Keep in mind that the `Point3` class is _mutable_.
