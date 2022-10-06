@@ -3,7 +3,7 @@ import { OnlyBot, OnlyBotLayer, OnlyBotMaterial } from '@/bot';
 import { mapAsciiToBits, mapBitsToAscii, ReadingBitBuffer, WritingBitBuffer } from '@/bits';
 import { calculateVoxelBounds, packVoxelSpace } from '@/utils';
 
-export const BIT_LENGTH = {
+const BIT_LENGTH = {
     COLOR_COUNT: 9,
     COLOR_RGB: 8,
     BOT_LENGTH: 12,
@@ -490,6 +490,7 @@ export class CompressedBot {
 }
 
 export class CompressedBots {
+    public static readonly BIT_LENGTH = BIT_LENGTH;
     public readonly colors: CompressedColor[];
     public readonly bots: CompressedBot[];
 

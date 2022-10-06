@@ -5,7 +5,7 @@ import { packVoxelSpace } from '@/utils';
 export const OnlyBotLayerType = ['body', 'eye', 'arm', 'leg', 'top', 'tail'] as const;
 export type OnlyBotLayerType = typeof OnlyBotLayerType[number];
 
-export const OnlyBotLayerId: Record<OnlyBotLayerType, number> = {
+export const OnlyBotLayerTypeId: Record<OnlyBotLayerType, number> = {
     body: OnlyBotLayerType.indexOf('body'),
     eye: OnlyBotLayerType.indexOf('eye'),
     arm: OnlyBotLayerType.indexOf('arm'),
@@ -54,7 +54,7 @@ export const OnlyBotJson = t.Record({
 });
 export type OnlyBotJson = t.Static<typeof OnlyBotJson>;
 
-export type OpenseaAttribute = {
+type OpenseaAttribute = {
     trait_type?: string;
     display_type?: 'number' | 'date' | 'boost_number' | 'boost_percentage';
     value: string | number;
