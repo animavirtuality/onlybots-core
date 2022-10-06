@@ -220,6 +220,11 @@ When compressing multiple bots, the colors from each material in the bot are con
 In the binary format, each material no longer has a color, but instead has an index into the shared color list.
 This remains the case even when a single bot is compressed, as the format is optimized for deploying many bots at once.
 
+Note that magnitude for each value in the format is constrained by the width of the value, with the following clarifications:
+* For one-bit flags, `0` is interpreted as `false` and `1` is interpreted as `true`
+* For `COLOR_COUNT`, `NAME_COUNT`, `MATERIAL_COUNT`, `LAYER_COUNT`, and `LAYER_LIST_COUNT`, at least one value is required, so the actual value is one more than the encoded value
+    * For example, a value of `0` for `MATERIAL_COUNT` means there is one material, and a value of `3` means there are four materials
+
 Therefore, the structure of the binary format is as follows:
 * `COLOR_COUNT`: the number of colors that directly follow
 * a list of colors:
@@ -243,7 +248,7 @@ Therefore, the structure of the binary format is as follows:
     * `LAYER_COUNT`: the number of layers that directly follow
     * `LAYER_TYPE`: the type of the layer
     * `LAYER_MATERIAL`: the index of the layer's material in the material list
-    * `FOURBIT_FLAG`: a flag that indicates whether voxel coordinates are `3` (`false`) or `4` (`true`) bits wide
+    * `FOURBIT_FLAG`: a flag that indicates whether voxel coordinates are `3` (`false`) or `4` (`true`) bits wide (`coordinateBitSize`)
     * `ORIGIN`: the x value of the origin that the layer voxels are relative to
     * `ORIGIN`: the y value of the origin that the layer voxels are relative to
     * `ORIGIN`: the z value of the origin that the layer voxels are relative to
