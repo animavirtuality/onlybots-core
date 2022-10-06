@@ -175,7 +175,7 @@ The shader index is used to determine how the material is rendered, indexing int
 Since material rendering is highly platform dependent, the actual implementation for material shaders and values may vary but the desired outcome is well-defined for each shader.
 The shader list is TBD, but will be linked here when it is populated.
 
-### layers
+#### layers
 
 Each bot consists of at least one and up to 32 individual layers.
 Each layer consists of the following:
