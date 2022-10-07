@@ -8,6 +8,7 @@ and this project (loosely) adheres to [Semantic Versioning](https://semver.org/s
 ## [Unreleased]
 ### Changed
 * Tweak API
+* Update metadata format
 
 ## [1.1.2](https://github.com/animavirtuality/onlybots-core/compare/1.1.1...1.1.2) - October 4, 2022
 ### Changed

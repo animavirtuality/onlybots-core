@@ -54,18 +54,29 @@ export const OnlyBotJson = t.Record({
 });
 export type OnlyBotJson = t.Static<typeof OnlyBotJson>;
 
-type OpenseaAttribute = {
+type MetadataAttribute = {
     trait_type?: string;
     display_type?: 'number' | 'date' | 'boost_number' | 'boost_percentage';
     value: string | number;
 };
 
-export type OnlyBotMetadata = {
+type MetadataAsset = {
     name: string;
-    image: string;
-    attributes: OpenseaAttribute[];
-    bot: OnlyBotJson;
+    uri: string;
+    mimeType: string;
 };
+
+type TokenMetadata<E> = {
+    name: string;
+    description?: string;
+    image: string;
+    animation_url?: string;
+    attributes: MetadataAttribute[];
+    assets: MetadataAsset[];
+    ext: E;
+};
+
+export type OnlyBotMetadata = TokenMetadata<{ source: OnlyBotJson }>;
 
 export class OnlyBot {
     public readonly name: string;
