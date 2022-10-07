@@ -62,8 +62,8 @@ type MetadataAttribute = {
 
 type MetadataAsset = {
     name: string;
+    type: string;
     uri: string;
-    mimeType: string;
 };
 
 type TokenMetadata<E> = {
