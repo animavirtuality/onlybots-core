@@ -240,7 +240,7 @@ This remains the case even when a single bot is compressed, as the format is opt
 
 Note that magnitude for each value in the format is constrained by the width of the value, with the following clarifications:
 * For one-bit flags, `0` is interpreted as `false` and `1` is interpreted as `true`
-* For `COLOR_COUNT`, `NAME_COUNT`, `MATERIAL_COUNT`, `LAYER_COUNT`, and `LAYER_LIST_COUNT`, at least one value is required, so the actual value is one more than the encoded value
+* For `colorCount`, `NAME_COUNT`, `MATERIAL_COUNT`, `LAYER_COUNT`, `listCount`, and `LAYER_DATA_FIELD_LENGTH`, the value is required to be >= 1, so the actual value is encoded as `value - 1` and must be decoded as `value + 1`
     * For example, a value of `0` for `MATERIAL_COUNT` means there is one material, and a value of `3` means there are four materials
 
 Therefore, the structure of the binary format is as follows:

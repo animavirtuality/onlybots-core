@@ -168,9 +168,9 @@ export class CompressedLayerDataField extends CompressedLayerData {
 
     public static formatSpecificFromBuffer(buffer: ReadingBitBuffer, origin: Point3): CompressedLayerDataField {
         const length = new Point3(
-            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH),
-            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH),
-            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH)
+            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH + 1),
+            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH + 1),
+            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH + 1)
         );
 
         const set = new Point3Set();
@@ -201,9 +201,9 @@ export class CompressedLayerDataField extends CompressedLayerData {
         buffer: WritingBitBuffer,
         _layerListCountBitwidth: number
     ): void {
-        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH, this.length.x);
-        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH, this.length.y);
-        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH, this.length.z);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH, this.length.x - 1);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH, this.length.y - 1);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH, this.length.z - 1);
 
         for (let x = 0; x < this.length.x; x++) {
             for (let y = 0; y < this.length.y; y++) {
@@ -462,7 +462,7 @@ export class CompressedBot {
         const choices = bot.layers.map((layer) => LayerCompressionChoice.init(layer));
 
         // TODO: use a better algorithm than this
-        const worstCaseCount = minBitsRequired(Math.pow(2, BIT_LENGTH.LAYER_DATA_LIST_COUNT_BITWIDTH) - 1);
+        const worstCaseCount = Math.pow(2, BIT_LENGTH.LAYER_DATA_LIST_COUNT_BITWIDTH) - 1;
         choices.forEach((choice) => {
             if (choice.list.compressedSizeInBits(worstCaseCount) < choice.field.compressedSizeInBits(worstCaseCount)) {
                 choice.choose('LIST');
