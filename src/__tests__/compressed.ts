@@ -71,7 +71,7 @@ describe('CompressedBots', () => {
 
         const buffer = compressed.toBuffer();
         expect(buffer.toString('hex')).toBe(
-            '1ff8000007f800076982e9e9cd2404100c09020000c700000f0f00fff00f0fff0fff2b338887c0'
+            '1ff8000007f800076982e9e9cd2404100c09020000c700000f0f00fff00f0fff0fff2b338443c0'
         );
 
         const recovered = CompressedBots.fromBuffer(buffer);
@@ -89,7 +89,7 @@ describe('CompressedBots', () => {
 
         const buffer = compressed.toBuffer();
         expect(buffer.toString('hex')).toBe(
-            '2bfc000003fc000003fc03bcc174f4e6920208028120400018e00001e1e01ffe01e1ffe1ffe5667110f8077182e9ea7673ffd1922840d00034c0040447e26670e00038e07fc0e3fe3fe0'
+            '2bfc000003fc000003fc03bcc174f4e6920208028120400018e00001e1e01ffe01e1ffe1ffe566708878077182e9ea7673ffd1922840d00034c0040447e26670e00038e07fc0e3fe3fe0'
         );
 
         const recovered = CompressedBots.fromBuffer(buffer);

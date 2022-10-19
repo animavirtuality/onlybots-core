@@ -168,9 +168,9 @@ export class CompressedLayerDataField extends CompressedLayerData {
 
     public static formatSpecificFromBuffer(buffer: ReadingBitBuffer, origin: Point3): CompressedLayerDataField {
         const length = new Point3(
-            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH + 1),
-            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH + 1),
-            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH + 1)
+            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH) + 1,
+            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH) + 1,
+            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH) + 1
         );
 
         const set = new Point3Set();
@@ -407,6 +407,10 @@ class LayerCompressionChoice {
         );
     }
 
+    public getChoice(this: LayerCompressionChoice): 'FIELD' | 'LIST' | null {
+        return this.choice;
+    }
+
     public choose(this: LayerCompressionChoice, choice: 'FIELD' | 'LIST'): void {
         this.choice = choice;
     }
@@ -417,6 +421,14 @@ class LayerCompressionChoice {
         }
 
         return this.list.listCount();
+    }
+
+    public getFieldCompressedSize(this: LayerCompressionChoice): number {
+        return this.field.compressedSizeInBits(0);
+    }
+
+    public getListCompressedSize(this: LayerCompressionChoice, layerListCountBitwidth: number): number {
+        return this.list.compressedSizeInBits(layerListCountBitwidth);
     }
 
     public toCompressedLayer(this: LayerCompressionChoice): CompressedLayer {
@@ -461,15 +473,56 @@ export class CompressedBot {
         const materials = bot.materials.map(compressMaterial);
         const choices = bot.layers.map((layer) => LayerCompressionChoice.init(layer));
 
-        // TODO: use a better algorithm than this
-        const worstCaseCount = Math.pow(2, BIT_LENGTH.LAYER_DATA_LIST_COUNT_BITWIDTH) - 1;
+        // First, eliminate all of the layers that would be fields regardless of list length bitwidth
+        const bestCaseBitwidth = 1;
         choices.forEach((choice) => {
-            if (choice.list.compressedSizeInBits(worstCaseCount) < choice.field.compressedSizeInBits(worstCaseCount)) {
-                choice.choose('LIST');
-            } else {
+            if (choice.getFieldCompressedSize() <= choice.getListCompressedSize(bestCaseBitwidth)) {
                 choice.choose('FIELD');
             }
         });
+
+        let updated: boolean;
+        let remainingWorstCaseBitwidth: number;
+
+        // Second, loop through the remaining layers and find the worst remaining bitwidth
+        // Use that to determine if any lists are better than fields
+        // Repeat until there are no more layers that are better as lists than fields
+        do {
+            updated = false;
+            remainingWorstCaseBitwidth = minBitsRequired(
+                Math.max(
+                    ...choices
+                        .filter((choice) => choice.getChoice() !== 'FIELD')
+                        .map((choice) => choice.getListLength())
+                )
+            );
+
+            choices
+                .filter((choice) => choice.getChoice() === null)
+                .forEach((choice) => {
+                    // If this list at its worst case bitwidth is smaller than the field, choose list
+                    // Otherwise, if this is the worst case bitwidth, choose field -
+                    //   since this is the worst case, the list size will never decrease below the field size if it hasn't already
+                    if (choice.getListCompressedSize(remainingWorstCaseBitwidth) < choice.getFieldCompressedSize()) {
+                        choice.choose('LIST');
+                        updated = true;
+                    } else if (choice.getListLength() === remainingWorstCaseBitwidth) {
+                        choice.choose('FIELD');
+                        updated = true;
+                    }
+                });
+        } while (updated);
+
+        // Last, set any remaining layers
+        choices
+            .filter((choice) => choice.getChoice() === null)
+            .forEach((choice) => {
+                if (choice.getFieldCompressedSize() <= choice.getListCompressedSize(remainingWorstCaseBitwidth)) {
+                    choice.choose('FIELD');
+                } else {
+                    choice.choose('LIST');
+                }
+            });
 
         const layers = choices.map((choice) => choice.toCompressedLayer());
         return new CompressedBot(bot.name, [bot.anchor.x, bot.anchor.y, bot.anchor.z], materials, layers);
