@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project (loosely) adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+* Update compression format to reduce static bit sizes and improve flexibility for outlier bots
 
 ## [1.2.1](https://github.com/animavirtuality/onlybots-core/compare/1.2.0...1.2.1) - October 7, 2022
 ### Fixed
