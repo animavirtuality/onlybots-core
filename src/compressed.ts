@@ -3,21 +3,6 @@ import { OnlyBot, OnlyBotLayer, OnlyBotMaterial } from '@/bot';
 import { mapAsciiToBits, mapBitsToAscii, ReadingBitBuffer, WritingBitBuffer } from '@/bits';
 import { calculateVoxelBounds, packVoxelSpace } from '@/utils';
 
-const minBitsRequired = (n: number): number => {
-    if (isNaN(n) || n < 0) {
-        throw new Error(`Cannot calculate bits required for: ${n}`);
-    }
-
-    if (n < 1) {
-        return 1;
-    }
-
-    // Formula for max int with b bits is 2^b - 1
-    // This means that, for example, 1 bit can store [0, 1] and 2 bits can store [0, 3]
-    // However, Math.log2(2) = 1, so we need to add 1 to n to get the correct result
-    return Math.ceil(Math.log2(n + 1));
-};
-
 const BIT_LENGTH = {
     COLOR_COUNT_BITWIDTH: 4,
     COLOR_RGB: 8,
@@ -34,13 +19,27 @@ const BIT_LENGTH = {
     LAYER_COUNT: 5,
     LAYER_TYPE: 3,
     LAYER_MATERIAL: 2,
-    FOURBIT_FLAG: 1,
     LAYER_DATA_ORIGIN: 4,
     LAYER_DATA_FORMAT: 1,
     LAYER_DATA_FIELD_LENGTH: 4,
     LAYER_DATA_FIELD_FLAG: 1,
     LAYER_DATA_LIST_FOURBIT: 1,
     LAYER_DATA_LIST_DIRECTION: 2,
+};
+
+const minBitsRequired = (n: number): number => {
+    if (isNaN(n) || n < 0) {
+        throw new Error(`Cannot calculate bits required for: ${n}`);
+    }
+
+    if (n < 1) {
+        return 1;
+    }
+
+    // Formula for max int with b bits is 2^b - 1
+    // This means that, for example, 1 bit can store [0, 1] and 2 bits can store [0, 3]
+    // However, Math.log2(2) = 1, so we need to add 1 to n to get the correct result
+    return Math.ceil(Math.log2(n + 1));
 };
 
 export class CompressedLayer {
@@ -274,7 +273,7 @@ export class CompressedLayerDataList extends CompressedLayerData {
         origin: Point3,
         layerListCountBitwidth: number
     ): CompressedLayerDataList {
-        const coordinateBitSize = buffer.readUIntBitsBE(BIT_LENGTH.FOURBIT_FLAG) > 0 ? 4 : 3;
+        const coordinateBitSize = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_LIST_FOURBIT) > 0 ? 4 : 3;
         const direction = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_LIST_DIRECTION);
         const length = buffer.readUIntBitsBE(layerListCountBitwidth) + 1;
         const voxels: (Point2 | Point3)[] = [];
@@ -309,7 +308,7 @@ export class CompressedLayerDataList extends CompressedLayerData {
         layerListCountBitwidth: number
     ): number {
         let size = 0;
-        size += BIT_LENGTH.FOURBIT_FLAG;
+        size += BIT_LENGTH.LAYER_DATA_LIST_FOURBIT;
         size += BIT_LENGTH.LAYER_DATA_LIST_DIRECTION;
         size += layerListCountBitwidth;
         size += this.voxels.length * this.coordinateBitSize() * (this.direction === 0 ? 3 : 2);
@@ -317,7 +316,7 @@ export class CompressedLayerDataList extends CompressedLayerData {
     }
 
     protected formatSpecificToBuffer(buffer: WritingBitBuffer, layerListCountBitwidth: number): void {
-        buffer.writeUIntBitsBE(BIT_LENGTH.FOURBIT_FLAG, this.fourbit ? 1 : 0);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_LIST_FOURBIT, this.fourbit ? 1 : 0);
         buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_LIST_DIRECTION, this.direction);
         if (this.voxels.length < 1) {
             throw new Error('LayerDataList must have at least one voxel');
@@ -349,8 +348,8 @@ export class CompressedLayerDataList extends CompressedLayerData {
         return voxels;
     }
 
-    public listCount(this: CompressedLayerDataList): number {
-        return this.voxels.length;
+    public serializedListCount(this: CompressedLayerDataList): number {
+        return this.voxels.length - 1;
     }
 }
 
@@ -420,7 +419,7 @@ class LayerCompressionChoice {
             return 0;
         }
 
-        return this.list.listCount();
+        return this.list.serializedListCount();
     }
 
     public getFieldCompressedSize(this: LayerCompressionChoice): number {
@@ -460,7 +459,7 @@ export class CompressedBot {
         this.layers = layers;
 
         const sizes = layers.map((layer) =>
-            layer.data instanceof CompressedLayerDataList ? layer.data.listCount() : 0
+            layer.data instanceof CompressedLayerDataList ? layer.data.serializedListCount() : 0
         );
         const maxCount = Math.max(0, ...sizes);
         this.layerListCountBitwidth = minBitsRequired(maxCount);

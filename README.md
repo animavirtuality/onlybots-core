@@ -231,7 +231,7 @@ Instead, use the provided `CompressedBots.compress()`, `CompressedBots.expand()`
 ### Structure
 
 The binary format is a sequence of values, where each value is a specific width _in bits_ and order is deterministic.
-The width of each value can be found in the [BIT_LENGTH](./src/compressed.ts#L6-L28) record.
+The width of each static value can be found in the [BIT_LENGTH](./src/compressed.ts#L6-L28) record.
 Note that some languages (such as JavaScript) don't have native support for reading and writing values of arbitrary bit widths, or at arbitrary bit offsets.
 
 When compressing multiple bots, the colors from each material in the bot are concatenated together into a single list of colors and deduplicated.
@@ -240,18 +240,19 @@ This remains the case even when a single bot is compressed, as the format is opt
 
 Note that magnitude for each value in the format is constrained by the width of the value, with the following clarifications:
 * For one-bit flags, `0` is interpreted as `false` and `1` is interpreted as `true`
-* For `colorCount`, `NAME_COUNT`, `MATERIAL_COUNT`, `LAYER_COUNT`, `listCount`, and `LAYER_DATA_FIELD_LENGTH`, the value is required to be >= 1, so the actual value is encoded as `value - 1` and must be decoded as `value + 1`
-    * For example, a value of `0` for `MATERIAL_COUNT` means there is one material, and a value of `3` means there are four materials
+* **§**: A field annotated with this symbol is a count where the value is required to be >= 1.  In order to make better use of space, the actual value is encoded as `value - 1` and _must_ be decoded as `value + 1`
+    * For example, an encoded value of `0` for `MATERIAL_COUNT` means there is one material, and an encoded value of `3` means there are four materials
 
 Therefore, the structure of the binary format is as follows:
-* `COLOR_COUNT`: the number of colors that directly follow
+* `COLOR_COUNT_BITWIDTH`: the number of bits used to store color count and index in this group of bots, referenced here as `colorCountBitwidth`
+* **§** `colorCountBitwidth`: the number of colors that directly follow
 * a list of colors:
     * `COLOR_RGB`: the red component of the color
     * `COLOR_RGB`: the green component of the color
     * `COLOR_RGB`: the blue component of the color
 * a list of bots - list end is inferred when buffer ends or bot length is `0` (buffer is padded with `0` to align to a byte boundary):
     * `BOT_LENGTH`: the length in bits of the bot: used to traverse the list when choosing a specific bot
-    * `NAME_COUNT`: the number of characters in the bot's name
+    * **§** `NAME_COUNT`: the number of characters in the bot's name
     * a list of characters:
         * `NAME_CHAR`: a character, encoded with `mapAsciiToBits` and decoded with `mapBitsToAscii`
     * `ANCHOR_XZ_SIGN`: the sign (+ or -) of the x value of the anchor
@@ -259,31 +260,42 @@ Therefore, the structure of the binary format is as follows:
     * `ANCHOR_Y`: the y value of the anchor
     * `ANCHOR_XZ_SIGN`: the sign (+ or -) of the z value of the anchor
     * `ANCHOR_Z`: the absolute value of the z value of the anchor
-    * `MATERIAL_COUNT`: the number of materials that directly follow
+    * **§** `MATERIAL_COUNT`: the number of materials that directly follow
     * a list of materials:
-        * `MATERIAL_COLOR`: the index of the material's color in the color list
+        * `colorCountBitwidth`: the index of the material's color in the color list
         * `MATERIAL_SHADER`: the index of the material's shader
-    * `LAYER_COUNT`: the number of layers that directly follow
-    * `LAYER_TYPE`: the type of the layer
-    * `LAYER_MATERIAL`: the index of the layer's material in the material list
-    * `FOURBIT_FLAG`: a flag that indicates whether voxel coordinates are `3` (`false`) or `4` (`true`) bits wide (`coordinateBitSize`)
-    * `ORIGIN`: the x value of the origin that the layer voxels are relative to
-    * `ORIGIN`: the y value of the origin that the layer voxels are relative to
-    * `ORIGIN`: the z value of the origin that the layer voxels are relative to
-    * `FORMAT_FLAG`: a flag that indicates whether the layer voxels are encoded as a list or field
-    * if list (`true`):
-        * `DIRECTION`: whether voxels that follow are in `x,y,z`, `y,z`, `x,z`, or `x,y` form.  For 2d voxels, missing coordinate is equal to origin value for that axis.
-        * `LAYER_LIST_COUNT`: the number of voxels that directly follow
-        * for each voxel:
-            * `coordinateBitSize`: the first coordinate
-            * `coordinateBitSize`: the second coordinate
-            * if direction is `x,y,z`:
-                * `coordinateBitSize`: the third coordinate
-    * if field (`false`):
-        * `coordinateBitSize`: the length of the field along the x-axis
-        * `coordinateBitSize`: the length of the field along the y-axis
-        * `coordinateBitSize`: the length of the field along the z-axis
-        * a bit-field of size `length.x` * `length.y` * `length.z` that indicates whether a voxel is present at that position by `field[x][y][z] === 1`
+    * `LAYER_DATA_LIST_COUNT_BITWIDTH`: the number of bits used for the count of voxels in any layer data formatted as a list for this bot, referenced here as `layerListCountBitwidth`
+    * **§** `LAYER_COUNT`: the number of layers that directly follow
+    * a list of layers:
+        * `LAYER_TYPE`: the type of the layer
+        * `LAYER_MATERIAL`: the index of the layer's material in the material list
+        * `LAYER_DATA_ORIGIN`: the x value of the origin that the layer voxels are relative to
+        * `LAYER_DATA_ORIGIN`: the y value of the origin that the layer voxels are relative to
+        * `LAYER_DATA_ORIGIN`: the z value of the origin that the layer voxels are relative to
+        * `LAYER_DATA_FORMAT`: a flag that indicates whether the layer voxels are encoded as a list or field
+        * if list (`true`):
+            * `LAYER_DATA_LIST_FOURBIT`: a flag that indicates whether voxel coordinates are `3` (`false`) or `4` (`true`) bits wide, referenced here as `coordinateBitSize`
+            * `LAYER_DATA_LIST_DIRECTION`: whether voxels that follow are in `x,y,z`, `y,z`, `x,z`, or `x,y` form.  For 2d voxels, missing coordinate is equal to origin value for that axis.
+            * **§** `layerListCountBitwidth`: the number of voxels that directly follow
+            * for each voxel:
+                * `coordinateBitSize`: the first coordinate
+                * `coordinateBitSize`: the second coordinate
+                * if direction is `x,y,z`:
+                    * `coordinateBitSize`: the third coordinate
+        * if field (`false`):
+            * **§** `LAYER_DATA_FIELD_LENGTH`: the length of the field along the x-axis
+            * **§** `LAYER_DATA_FIELD_LENGTH`: the length of the field along the y-axis
+            * **§** `LAYER_DATA_FIELD_LENGTH`: the length of the field along the z-axis
+            * a bit-field of `LAYER_DATA_FIELD_FLAG` with length `length.x` * `length.y` * `length.z` that indicates whether a voxel is present at that position by `field[x][y][z] === 1`.  Field is serialized and deserialized with the following order of nested loops:
+              ````
+              for (x) {
+                for (y) {
+                  for (z) {
+                    // ...
+                  }
+                }
+              }  
+              ````
 
 ## Usage
 
