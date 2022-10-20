@@ -8,6 +8,7 @@ and this project (loosely) adheres to [Semantic Versioning](https://semver.org/s
 ## [Unreleased]
 ### Fixed
 * Fix bug when all layers are compressed as fields
+* Fix bug with list compression
 
 ## [2.0.0](https://github.com/animavirtuality/onlybots-core/compare/1.2.1...2.0.0) - October 19, 2022
 ### Changed

@@ -47,6 +47,11 @@ const bot2 = new OnlyBot(
             voxels: [new Point3(0, 0, 0), new Point3(0, 1, 0), new Point3(0, 1, 1), new Point3(0, 1, 15)],
         },
         {
+            type: 2,
+            material: 1,
+            voxels: [new Point3(0, 0, 0), new Point3(8, 8, 8)],
+        },
+        {
             type: 4,
             material: 1,
             voxels: [
@@ -89,7 +94,7 @@ describe('CompressedBots', () => {
 
         const buffer = compressed.toBuffer();
         expect(buffer.toString('hex')).toBe(
-            '2bfc000003fc000003fc03bcc174f4e6920208028120400018e00001e1e01ffe01e1ffe1ffe566708878077182e9ea7673ffd1922840d00034c0040447e26670e00038e07fc0e3fe3fe0'
+            '2bfc000003fc000003fc03bcc174f4e6920208028120400018e00001e1e01ffe01e1ffe1ffe56670887808f982e9ea7673ffd1922841500034c0040447d2001820011111333870001c703fe071ff1ff0'
         );
 
         const recovered = CompressedBots.fromBuffer(buffer);

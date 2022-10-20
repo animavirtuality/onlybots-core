@@ -244,7 +244,7 @@ export class CompressedLayerDataList extends CompressedLayerData {
 
     constructor(origin: Point3, direction: number, voxels: Point2[] | Point3[]) {
         super(origin);
-        this.fourbit = voxels.some((voxel) => voxel.x > 8 || voxel.y > 8 || (voxel instanceof Point3 && voxel.z > 8));
+        this.fourbit = voxels.some((voxel) => voxel.x > 7 || voxel.y > 7 || (voxel instanceof Point3 && voxel.z > 7));
         this.direction = direction;
         this.voxels = voxels;
     }
