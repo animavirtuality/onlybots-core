@@ -491,6 +491,7 @@ export class CompressedBot {
             updated = false;
             remainingWorstCaseBitwidth = minBitsRequired(
                 Math.max(
+                    0,
                     ...choices
                         .filter((choice) => choice.getChoice() !== 'FIELD')
                         .map((choice) => choice.getListLength())
