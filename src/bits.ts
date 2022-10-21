@@ -18,6 +18,14 @@ export const mapAsciiToBits = (c: number): number => {
         return 27;
     }
 
+    if (c === 46) {
+        return 28;
+    }
+
+    if (c === 39) {
+        return 29;
+    }
+
     throw new Error(`Invalid character: ${c}`);
 };
 
@@ -32,6 +40,14 @@ export const mapBitsToAscii = (bits: number): number => {
 
     if (bits === 27) {
         return 45;
+    }
+
+    if (bits === 28) {
+        return 46;
+    }
+
+    if (bits === 29) {
+        return 39;
     }
 
     throw new Error(`Invalid bits: ${bits}`);

@@ -23,8 +23,11 @@ describe('splitBits', () => {
     });
 });
 
-const validAsciiCharacters: Buffer = Buffer.from('abcdefghijklmnopqrstuvwxyz -', 'ascii');
-const validBinaryCharacters: Buffer = Buffer.from('000102030405060708090A0B0C0D0E0F101112131415161718191A1B', 'hex');
+const validAsciiCharacters: Buffer = Buffer.from("abcdefghijklmnopqrstuvwxyz -.'", 'ascii');
+const validBinaryCharacters: Buffer = Buffer.from(
+    '000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D',
+    'hex'
+);
 
 describe('mapAsciiToBits', () => {
     it('maps valid characters', () => {
@@ -43,7 +46,7 @@ describe('mapAsciiToBits', () => {
                 }).toThrow(`Invalid character: ${c.toString(10)}`);
             });
 
-        expect(tested).toBe(100);
+        expect(tested).toBe(98);
     });
 });
 
@@ -64,7 +67,7 @@ describe('mapBitsToAscii', () => {
                 }).toThrow(`Invalid bits: ${b.toString(10)}`);
             });
 
-        expect(tested).toBe(100);
+        expect(tested).toBe(98);
     });
 });
 
