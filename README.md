@@ -264,18 +264,18 @@ Therefore, the structure of the binary format is as follows:
     * a list of materials:
         * `colorCountBitwidth`: the index of the material's color in the color list
         * `MATERIAL_SHADER`: the index of the material's shader
-    * `LAYER_DATA_LIST_COUNT_BITWIDTH`: the number of bits used for the count of voxels in any layer data formatted as a list for this bot, referenced here as `layerListCountBitwidth`
+    * `LAYER_VOXEL_LIST_COUNT_BITWIDTH`: the number of bits used for the count of voxels in any layer data formatted as a list for this bot, referenced here as `layerListCountBitwidth`
     * **§** `LAYER_COUNT`: the number of layers that directly follow
     * a list of layers:
         * `LAYER_TYPE`: the type of the layer
         * `LAYER_MATERIAL`: the index of the layer's material in the material list
-        * `LAYER_DATA_ORIGIN`: the x value of the origin that the layer voxels are relative to
-        * `LAYER_DATA_ORIGIN`: the y value of the origin that the layer voxels are relative to
-        * `LAYER_DATA_ORIGIN`: the z value of the origin that the layer voxels are relative to
-        * `LAYER_DATA_FORMAT`: a flag that indicates whether the layer voxels are encoded as a list or field
+        * `LAYER_VOXEL_ORIGIN`: the x value of the origin that the layer voxels are relative to
+        * `LAYER_VOXEL_ORIGIN`: the y value of the origin that the layer voxels are relative to
+        * `LAYER_VOXEL_ORIGIN`: the z value of the origin that the layer voxels are relative to
+        * `LAYER_VOXEL_FORMAT`: a flag that indicates whether the layer voxels are encoded as a list or field
         * if list (`true`):
-            * `LAYER_DATA_LIST_FOURBIT`: a flag that indicates whether voxel coordinates are `3` (`false`) or `4` (`true`) bits wide, referenced here as `coordinateBitSize`
-            * `LAYER_DATA_LIST_DIRECTION`: whether voxels that follow are in `x,y,z`, `y,z`, `x,z`, or `x,y` form.  For 2d voxels, missing coordinate is equal to origin value for that axis.
+            * `LAYER_VOXEL_LIST_FOURBIT`: a flag that indicates whether voxel coordinates are `3` (`false`) or `4` (`true`) bits wide, referenced here as `coordinateBitSize`
+            * `LAYER_VOXEL_LIST_DIRECTION`: whether voxels that follow are in `x,y,z`, `y,z`, `x,z`, or `x,y` form.  For 2d voxels, missing coordinate is equal to origin value for that axis.
             * **§** `layerListCountBitwidth`: the number of voxels that directly follow
             * for each voxel:
                 * `coordinateBitSize`: the first coordinate
@@ -283,10 +283,10 @@ Therefore, the structure of the binary format is as follows:
                 * if direction is `x,y,z`:
                     * `coordinateBitSize`: the third coordinate
         * if field (`false`):
-            * **§** `LAYER_DATA_FIELD_LENGTH`: the length of the field along the x-axis
-            * **§** `LAYER_DATA_FIELD_LENGTH`: the length of the field along the y-axis
-            * **§** `LAYER_DATA_FIELD_LENGTH`: the length of the field along the z-axis
-            * a bit-field of `LAYER_DATA_FIELD_FLAG` with length `length.x` * `length.y` * `length.z` that indicates whether a voxel is present at that position by `field[x][y][z] === 1`.  Field is serialized and deserialized with the following order of nested loops:
+            * **§** `LAYER_VOXEL_FIELD_LENGTH`: the length of the field along the x-axis
+            * **§** `LAYER_VOXEL_FIELD_LENGTH`: the length of the field along the y-axis
+            * **§** `LAYER_VOXEL_FIELD_LENGTH`: the length of the field along the z-axis
+            * a bit-field of `LAYER_VOXEL_FIELD_FLAG` with length `length.x` * `length.y` * `length.z` that indicates whether a voxel is present at that position by `field[x][y][z] === 1`.  Field is serialized and deserialized with the following order of nested loops:
               ````
               for (x) {
                 for (y) {

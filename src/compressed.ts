@@ -19,12 +19,12 @@ const BIT_LENGTH = {
     LAYER_COUNT: 5,
     LAYER_TYPE: 3,
     LAYER_MATERIAL: 2,
-    LAYER_DATA_ORIGIN: 4,
-    LAYER_DATA_FORMAT: 1,
-    LAYER_DATA_FIELD_LENGTH: 4,
-    LAYER_DATA_FIELD_FLAG: 1,
-    LAYER_DATA_LIST_FOURBIT: 1,
-    LAYER_DATA_LIST_DIRECTION: 2,
+    LAYER_VOXEL_ORIGIN: 4,
+    LAYER_VOXEL_FORMAT: 1,
+    LAYER_VOXEL_FIELD_LENGTH: 4,
+    LAYER_VOXEL_FIELD_FLAG: 1,
+    LAYER_VOXEL_LIST_FOURBIT: 1,
+    LAYER_VOXEL_LIST_DIRECTION: 2,
 };
 
 const minBitsRequired = (n: number): number => {
@@ -100,11 +100,11 @@ export abstract class CompressedLayerData {
 
     public static fromBuffer(buffer: ReadingBitBuffer, layerListCountBitwidth: number): CompressedLayerData {
         const origin = new Point3(
-            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_ORIGIN),
-            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_ORIGIN),
-            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_ORIGIN)
+            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_ORIGIN),
+            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_ORIGIN),
+            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_ORIGIN)
         );
-        const format = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_FORMAT);
+        const format = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_FORMAT);
 
         return format
             ? CompressedLayerDataList.formatSpecificFromBuffer(buffer, origin, layerListCountBitwidth)
@@ -115,8 +115,8 @@ export abstract class CompressedLayerData {
 
     public compressedSizeInBits(this: CompressedLayerData, layerListCountBitwidth: number): number {
         let size = 0;
-        size += 3 * BIT_LENGTH.LAYER_DATA_ORIGIN;
-        size += BIT_LENGTH.LAYER_DATA_FORMAT;
+        size += 3 * BIT_LENGTH.LAYER_VOXEL_ORIGIN;
+        size += BIT_LENGTH.LAYER_VOXEL_FORMAT;
         size += this.formatSpecificCompressedSizeInBits(layerListCountBitwidth);
         return size;
     }
@@ -124,10 +124,10 @@ export abstract class CompressedLayerData {
     protected abstract formatSpecificToBuffer(buffer: WritingBitBuffer, layerListCountBitwidth: number): void;
 
     public toBuffer(this: CompressedLayerData, buffer: WritingBitBuffer, layerListCountBitwidth: number): void {
-        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_ORIGIN, this.origin.x);
-        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_ORIGIN, this.origin.y);
-        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_ORIGIN, this.origin.z);
-        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_FORMAT, this.format ? 1 : 0);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_ORIGIN, this.origin.x);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_ORIGIN, this.origin.y);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_ORIGIN, this.origin.z);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_FORMAT, this.format ? 1 : 0);
         this.formatSpecificToBuffer(buffer, layerListCountBitwidth);
     }
 
@@ -167,16 +167,16 @@ export class CompressedLayerDataField extends CompressedLayerData {
 
     public static formatSpecificFromBuffer(buffer: ReadingBitBuffer, origin: Point3): CompressedLayerDataField {
         const length = new Point3(
-            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH) + 1,
-            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH) + 1,
-            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH) + 1
+            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_FIELD_LENGTH) + 1,
+            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_FIELD_LENGTH) + 1,
+            buffer.readUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_FIELD_LENGTH) + 1
         );
 
         const set = new Point3Set();
         for (let x = 0; x < length.x; x++) {
             for (let y = 0; y < length.y; y++) {
                 for (let z = 0; z < length.z; z++) {
-                    if (buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_FLAG) > 0) {
+                    if (buffer.readUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_FIELD_FLAG) > 0) {
                         set.add(x, y, z);
                     }
                 }
@@ -190,8 +190,8 @@ export class CompressedLayerDataField extends CompressedLayerData {
         _layerListCountBitwidth: number
     ): number {
         let size = 0;
-        size += 3 * BIT_LENGTH.LAYER_DATA_FIELD_LENGTH;
-        size += this.length.x * this.length.y * this.length.z * BIT_LENGTH.LAYER_DATA_FIELD_FLAG;
+        size += 3 * BIT_LENGTH.LAYER_VOXEL_FIELD_LENGTH;
+        size += this.length.x * this.length.y * this.length.z * BIT_LENGTH.LAYER_VOXEL_FIELD_FLAG;
         return size;
     }
 
@@ -200,14 +200,14 @@ export class CompressedLayerDataField extends CompressedLayerData {
         buffer: WritingBitBuffer,
         _layerListCountBitwidth: number
     ): void {
-        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH, this.length.x - 1);
-        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH, this.length.y - 1);
-        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_LENGTH, this.length.z - 1);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_FIELD_LENGTH, this.length.x - 1);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_FIELD_LENGTH, this.length.y - 1);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_FIELD_LENGTH, this.length.z - 1);
 
         for (let x = 0; x < this.length.x; x++) {
             for (let y = 0; y < this.length.y; y++) {
                 for (let z = 0; z < this.length.z; z++) {
-                    buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_FIELD_FLAG, this.set.has(x, y, z) ? 1 : 0);
+                    buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_FIELD_FLAG, this.set.has(x, y, z) ? 1 : 0);
                 }
             }
         }
@@ -273,8 +273,8 @@ export class CompressedLayerDataList extends CompressedLayerData {
         origin: Point3,
         layerListCountBitwidth: number
     ): CompressedLayerDataList {
-        const coordinateBitSize = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_LIST_FOURBIT) > 0 ? 4 : 3;
-        const direction = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_LIST_DIRECTION);
+        const coordinateBitSize = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_LIST_FOURBIT) > 0 ? 4 : 3;
+        const direction = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_LIST_DIRECTION);
         const length = buffer.readUIntBitsBE(layerListCountBitwidth) + 1;
         const voxels: (Point2 | Point3)[] = [];
 
@@ -308,16 +308,16 @@ export class CompressedLayerDataList extends CompressedLayerData {
         layerListCountBitwidth: number
     ): number {
         let size = 0;
-        size += BIT_LENGTH.LAYER_DATA_LIST_FOURBIT;
-        size += BIT_LENGTH.LAYER_DATA_LIST_DIRECTION;
+        size += BIT_LENGTH.LAYER_VOXEL_LIST_FOURBIT;
+        size += BIT_LENGTH.LAYER_VOXEL_LIST_DIRECTION;
         size += layerListCountBitwidth;
         size += this.voxels.length * this.coordinateBitSize() * (this.direction === 0 ? 3 : 2);
         return size;
     }
 
     protected formatSpecificToBuffer(buffer: WritingBitBuffer, layerListCountBitwidth: number): void {
-        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_LIST_FOURBIT, this.fourbit ? 1 : 0);
-        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_LIST_DIRECTION, this.direction);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_LIST_FOURBIT, this.fourbit ? 1 : 0);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_LIST_DIRECTION, this.direction);
         if (this.voxels.length < 1) {
             throw new Error('LayerDataList must have at least one voxel');
         }
