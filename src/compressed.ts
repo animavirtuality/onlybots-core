@@ -15,7 +15,7 @@ const BIT_LENGTH = {
     ANCHOR_Z: 4,
     MATERIAL_COUNT: 2,
     MATERIAL_SHADER: 8,
-    LAYER_DATA_LIST_COUNT_BITWIDTH: 4,
+    LAYER_VOXEL_LIST_COUNT_BITWIDTH: 4,
     LAYER_COUNT: 5,
     LAYER_TYPE: 3,
     LAYER_MATERIAL: 2,
@@ -550,7 +550,7 @@ export class CompressedBot {
             const shader = buffer.readUIntBitsBE(BIT_LENGTH.MATERIAL_SHADER);
             materials.push({ color, shader });
         }
-        const layerListCountBitwidth = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_DATA_LIST_COUNT_BITWIDTH);
+        const layerListCountBitwidth = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_LIST_COUNT_BITWIDTH);
         const layerCount = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_COUNT) + 1;
         const layers: CompressedLayer[] = [];
         for (let i = 0; i < layerCount; i++) {
@@ -570,7 +570,7 @@ export class CompressedBot {
         size += BIT_LENGTH.ANCHOR_Z;
         size += BIT_LENGTH.MATERIAL_COUNT;
         size += this.materials.length * (colorCountBitwidth + BIT_LENGTH.MATERIAL_SHADER);
-        size += BIT_LENGTH.LAYER_DATA_LIST_COUNT_BITWIDTH;
+        size += BIT_LENGTH.LAYER_VOXEL_LIST_COUNT_BITWIDTH;
         size += BIT_LENGTH.LAYER_COUNT;
         size += this.layers.reduce((sum, layer) => sum + layer.compressedSizeInBits(this.layerListCountBitwidth), 0);
         return size;
@@ -600,7 +600,7 @@ export class CompressedBot {
         if (this.layers.length < 1) {
             throw new Error('Must have at least one layer');
         }
-        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_DATA_LIST_COUNT_BITWIDTH, this.layerListCountBitwidth);
+        buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_LIST_COUNT_BITWIDTH, this.layerListCountBitwidth);
         buffer.writeUIntBitsBE(BIT_LENGTH.LAYER_COUNT, this.layers.length - 1);
         this.layers.forEach((layer) => {
             layer.toBuffer(buffer, this.layerListCountBitwidth);
