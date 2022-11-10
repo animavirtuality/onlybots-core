@@ -7,8 +7,8 @@ const bot1 = new OnlyBot(
     'bot one',
     { x: 0, y: 0, z: 0 },
     [
-        { color: [255, 0, 0], shader: 1 },
-        { color: [0, 255, 0], shader: 2 },
+        { color: [255, 0, 0], preset: 1 },
+        { color: [0, 255, 0], preset: 2 },
     ],
     [
         {
@@ -37,8 +37,8 @@ const bot2 = new OnlyBot(
     'bot two',
     { x: -15, y: 7, z: 15 },
     [
-        { color: [255, 0, 0], shader: 100 },
-        { color: [0, 0, 255], shader: 40 },
+        { color: [255, 0, 0], preset: 100 },
+        { color: [0, 0, 255], preset: 40 },
     ],
     [
         {

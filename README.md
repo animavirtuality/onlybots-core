@@ -29,10 +29,10 @@ This module contains functions and classes that assist in handling the JSON and 
   "name": "botty mcbotface",
   "anchor": { "x": 0, "y": 0, "z": 1 },
   "materials": [
-    { "color": [255, 0, 0], "shader": 0 },
-    { "color": [0, 255, 0], "shader": 1 },
-    { "color": [0, 0, 255], "shader": 2 },
-    { "color": [255, 255, 255], "shader": 2 }
+    { "color": [255, 0, 0], "preset": 0 },
+    { "color": [0, 255, 0], "preset": 1 },
+    { "color": [0, 0, 255], "preset": 2 },
+    { "color": [255, 255, 255], "preset": 2 }
   ],
   "layers": [
     { "type": 0, "material": 0, "voxels": [
@@ -187,11 +187,11 @@ The y value of the JSON anchor can be between `0` and `7` (inclusive), and moves
 #### materials
 
 A list of 1 to 4 materials used by the bot.
-Each material consists of an RGB color and a shader index.
-The shader index is used to determine how the material is rendered, indexing into a pre-defined list.
+Each material consists of an RGB color and a preset index.
+The preset index is used to determine how the material is rendered, indexing into a pre-defined list.
 
-Since material rendering is highly platform dependent, the actual implementation for material shaders and values may vary but the desired outcome is well-defined for each shader.
-The shader list is TBD, but will be linked here when it is populated.
+Since material rendering is highly platform dependent, the actual implementation for material preset and values may vary but the desired outcome is well-defined for each preset.
+The material preset list is TBD, but will be linked here when it is populated.
 
 #### layers
 
@@ -263,7 +263,7 @@ Therefore, the structure of the binary format is as follows:
     * **§** `MATERIAL_COUNT`: the number of materials that directly follow
     * a list of materials:
         * `colorCountBitwidth`: the index of the material's color in the color list
-        * `MATERIAL_SHADER`: the index of the material's shader
+        * `MATERIAL_PRESET`: the index of the material's preset
     * `LAYER_VOXEL_LIST_COUNT_BITWIDTH`: the number of bits used for the count of voxels in any layer data formatted as a list for this bot, referenced here as `layerListCountBitwidth`
     * **§** `LAYER_COUNT`: the number of layers that directly follow
     * a list of layers:
@@ -316,7 +316,7 @@ A helper class that wraps the JSON format of a single bot.
 
 - `name: string`
 - `anchor: { x: number, y: number, z: number }`
-- `materials: { color: [number, number, number], shader: number }[]`
+- `materials: { color: [number, number, number], preset: number }[]`
 - `layers: { type: number, material: number, voxels: [number, number, number][]`
 
 #### Methods

@@ -15,7 +15,7 @@ describe('OnlyBot', () => {
                 materials: [
                     {
                         color: [0, 0, 0],
-                        shader: 0,
+                        preset: 0,
                     },
                 ],
                 layers: [
@@ -38,7 +38,7 @@ describe('OnlyBot', () => {
     it('serializes voxels stably', () => {
         const name = 'name';
         const anchor: OnlyBotAnchor = { x: 0, y: 0, z: 0 };
-        const materials: OnlyBotMaterial[] = [{ color: [0, 0, 0], shader: 0 }];
+        const materials: OnlyBotMaterial[] = [{ color: [0, 0, 0], preset: 0 }];
         const voxels: Point3[] = [
             new Point3(0, 0, 0),
             new Point3(0, 1, 0),
@@ -66,7 +66,7 @@ describe('OnlyBot', () => {
         const bot = new OnlyBot(
             '',
             { x: 0, y: 0, z: 0 },
-            [{ color: [0, 0, 0], shader: 0 }],
+            [{ color: [0, 0, 0], preset: 0 }],
             [
                 { type: 0, material: 0, voxels: [voxel1] },
                 { type: 0, material: 0, voxels: [voxel3, voxel2] },
@@ -89,7 +89,7 @@ describe('OnlyBot', () => {
         new OnlyBot(
             '',
             { x: 0, y: 0, z: 0 },
-            [{ color: [0, 0, 0], shader: 0 }],
+            [{ color: [0, 0, 0], preset: 0 }],
             [{ type: 0, material: 0, voxels: [voxel1, voxel2, voxel3, voxel4] }]
         );
 

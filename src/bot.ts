@@ -22,7 +22,7 @@ export type OnlyBotAnchor = {
 
 export type OnlyBotMaterial = {
     color: [number, number, number];
-    shader: number;
+    preset: number;
 };
 
 export type OnlyBotLayer = {
@@ -41,7 +41,7 @@ export const OnlyBotJson = t.Record({
     materials: t.Array(
         t.Record({
             color: t.Tuple(t.Number, t.Number, t.Number),
-            shader: t.Number,
+            preset: t.Number,
         })
     ),
     layers: t.Array(
@@ -136,13 +136,13 @@ export class OnlyBot {
         json += this.indent(indent, 1, `"materials":${s}[${n}`);
         json +=
             this.materials
-                .map(({ color, shader }) => {
+                .map(({ color, preset }) => {
                     return this.indent(
                         indent,
                         2,
                         `{${s}"color":${s}[${color[0].toString(10)},${s}${color[1].toString(
                             10
-                        )},${s}${color[2].toString(10)}],${s}"shader":${s}${shader.toString(10)}${s}}`
+                        )},${s}${color[2].toString(10)}],${s}"preset":${s}${preset.toString(10)}${s}}`
                     );
                 })
                 .join(`,${n}`) + n;

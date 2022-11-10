@@ -14,7 +14,7 @@ const BIT_LENGTH = {
     ANCHOR_Y: 3,
     ANCHOR_Z: 4,
     MATERIAL_COUNT: 2,
-    MATERIAL_SHADER: 8,
+    MATERIAL_PRESET: 8,
     LAYER_VOXEL_LIST_COUNT_BITWIDTH: 4,
     LAYER_COUNT: 5,
     LAYER_TYPE: 3,
@@ -355,7 +355,7 @@ export class CompressedLayerDataList extends CompressedLayerData {
 
 export type CompressedMaterial = {
     color: number;
-    shader: number;
+    preset: number;
 };
 
 export class CompressedColor {
@@ -547,8 +547,8 @@ export class CompressedBot {
         const materials: CompressedMaterial[] = [];
         for (let i = 0; i < materialCount; i++) {
             const color = buffer.readUIntBitsBE(colorCountBitwidth);
-            const shader = buffer.readUIntBitsBE(BIT_LENGTH.MATERIAL_SHADER);
-            materials.push({ color, shader });
+            const preset = buffer.readUIntBitsBE(BIT_LENGTH.MATERIAL_PRESET);
+            materials.push({ color, preset });
         }
         const layerListCountBitwidth = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_VOXEL_LIST_COUNT_BITWIDTH);
         const layerCount = buffer.readUIntBitsBE(BIT_LENGTH.LAYER_COUNT) + 1;
@@ -569,7 +569,7 @@ export class CompressedBot {
         size += BIT_LENGTH.ANCHOR_XZ_SIGN;
         size += BIT_LENGTH.ANCHOR_Z;
         size += BIT_LENGTH.MATERIAL_COUNT;
-        size += this.materials.length * (colorCountBitwidth + BIT_LENGTH.MATERIAL_SHADER);
+        size += this.materials.length * (colorCountBitwidth + BIT_LENGTH.MATERIAL_PRESET);
         size += BIT_LENGTH.LAYER_VOXEL_LIST_COUNT_BITWIDTH;
         size += BIT_LENGTH.LAYER_COUNT;
         size += this.layers.reduce((sum, layer) => sum + layer.compressedSizeInBits(this.layerListCountBitwidth), 0);
@@ -595,7 +595,7 @@ export class CompressedBot {
         buffer.writeUIntBitsBE(BIT_LENGTH.MATERIAL_COUNT, this.materials.length - 1);
         this.materials.forEach((material) => {
             buffer.writeUIntBitsBE(colorCountBitwidth, material.color);
-            buffer.writeUIntBitsBE(BIT_LENGTH.MATERIAL_SHADER, material.shader);
+            buffer.writeUIntBitsBE(BIT_LENGTH.MATERIAL_PRESET, material.preset);
         });
         if (this.layers.length < 1) {
             throw new Error('Must have at least one layer');
@@ -612,7 +612,7 @@ export class CompressedBot {
             const { r, g, b } = colors[material.color];
             return {
                 color: [r, g, b],
-                shader: material.shader,
+                preset: material.preset,
             };
         });
         const layers = this.layers.map((layer) => layer.expand());
@@ -647,7 +647,7 @@ export class CompressedBots {
 
             return {
                 color: existing < 0 ? colors.length - 1 : existing,
-                shader: material.shader,
+                preset: material.preset,
             };
         };
         const compressedBots: CompressedBot[] = bots.map((bot) => CompressedBot.compress(bot, compressMaterial));
