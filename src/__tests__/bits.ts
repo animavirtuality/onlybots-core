@@ -23,9 +23,12 @@ describe('splitBits', () => {
     });
 });
 
-const validAsciiCharacters: Buffer = Buffer.from("abcdefghijklmnopqrstuvwxyz -.'", 'ascii');
+const validAsciiCharacters: Buffer = Buffer.from(
+    ' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\\^_|~',
+    'ascii'
+);
 const validBinaryCharacters: Buffer = Buffer.from(
-    '000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D',
+    '000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F202122232425262728292A2B2C2D2E2F303132333435363738393A3B3C3D3E3F',
     'hex'
 );
 
@@ -37,7 +40,7 @@ describe('mapAsciiToBits', () => {
 
     it('throws for invalid characters', () => {
         let tested = 0;
-        Array.from({ length: 128 }, (_, i) => i)
+        Array.from({ length: 256 }, (_, i) => i)
             .filter((c) => !validAsciiCharacters.includes(c))
             .forEach((c) => {
                 tested++;
@@ -46,7 +49,7 @@ describe('mapAsciiToBits', () => {
                 }).toThrow(`Invalid character: ${c.toString(10)}`);
             });
 
-        expect(tested).toBe(98);
+        expect(tested).toBe(192);
     });
 });
 
@@ -58,7 +61,7 @@ describe('mapBitsToAscii', () => {
 
     it('throws for invalid characters', () => {
         let tested = 0;
-        Array.from({ length: 128 }, (_, i) => i)
+        Array.from({ length: 256 }, (_, i) => i)
             .filter((b) => !validBinaryCharacters.includes(b))
             .forEach((b) => {
                 tested++;
@@ -67,7 +70,7 @@ describe('mapBitsToAscii', () => {
                 }).toThrow(`Invalid bits: ${b.toString(10)}`);
             });
 
-        expect(tested).toBe(98);
+        expect(tested).toBe(192);
     });
 });
 

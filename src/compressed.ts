@@ -8,7 +8,7 @@ const BIT_LENGTH = {
     COLOR_RGB: 8,
     BOT_LENGTH: 16,
     NAME_COUNT: 5,
-    NAME_CHAR: 5,
+    NAME_CHAR: 6,
     ANCHOR_XZ_SIGN: 1,
     ANCHOR_X: 4,
     ANCHOR_Y: 3,

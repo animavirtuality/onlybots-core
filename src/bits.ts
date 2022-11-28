@@ -6,48 +6,67 @@ export const allocBits = (n: number): Buffer => {
 };
 
 export const mapAsciiToBits = (c: number): number => {
-    if (c >= 97 && c <= 122) {
-        return c - 97;
+    // 32 to 90 => 0 to 58
+    if (c >= 32 && c <= 90) {
+        return c - 32;
     }
 
-    if (c === 32) {
-        return 26;
+    // 92 => 59
+    if (c === 92) {
+        return 59;
     }
 
-    if (c === 45) {
-        return 27;
+    // 94 => 60
+    if (c === 94) {
+        return 60;
+    }
+    // 95 => 61
+    if (c === 95) {
+        return 61;
     }
 
-    if (c === 46) {
-        return 28;
+    // 124 => 62
+    if (c === 124) {
+        return 62;
     }
 
-    if (c === 39) {
-        return 29;
+    // 126 => 63
+    if (c === 126) {
+        return 63;
     }
 
     throw new Error(`Invalid character: ${c}`);
 };
 
 export const mapBitsToAscii = (bits: number): number => {
-    if (bits >= 0 && bits <= 25) {
-        return bits + 97;
+    // 0 to 58 => 32 to 90
+    if (bits >= 0 && bits <= 58) {
+        return bits + 32;
     }
 
-    if (bits === 26) {
-        return 32;
+    // 59 => 92
+    if (bits === 59) {
+        return 92;
     }
 
-    if (bits === 27) {
-        return 45;
+    // 60 => 94
+    if (bits === 60) {
+        return 94;
     }
 
-    if (bits === 28) {
-        return 46;
+    // 61 => 95
+    if (bits === 61) {
+        return 95;
     }
 
-    if (bits === 29) {
-        return 39;
+    // 62 => 124
+    if (bits === 62) {
+        return 124;
+    }
+
+    // 63 => 126
+    if (bits === 63) {
+        return 126;
     }
 
     throw new Error(`Invalid bits: ${bits}`);

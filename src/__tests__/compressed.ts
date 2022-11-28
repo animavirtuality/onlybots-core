@@ -4,7 +4,7 @@ import { Point3 } from '@/point';
 import { CompressedBots } from '@/compressed';
 
 const bot1 = new OnlyBot(
-    'bot one',
+    'BOT ONE',
     { x: 0, y: 0, z: 0 },
     [
         { color: [255, 0, 0], preset: 1 },
@@ -34,7 +34,7 @@ const bot1 = new OnlyBot(
 );
 
 const bot2 = new OnlyBot(
-    'bot two',
+    'BOT TWO',
     { x: -15, y: 7, z: 15 },
     [
         { color: [255, 0, 0], preset: 100 },
@@ -76,7 +76,7 @@ describe('CompressedBots', () => {
 
         const buffer = compressed.toBuffer();
         expect(buffer.toString('hex')).toBe(
-            '1ff8000007f800076182e9e9cd2404100c08c20000ce00001e1e01ffe01e1ffe1ffe5667088780'
+            '1ff8000007f8000799a2bf402fba58082018118400019c00003c3c03ffc03c3ffc3ffcacce110f'
         );
 
         const recovered = CompressedBots.fromBuffer(buffer);
@@ -94,7 +94,7 @@ describe('CompressedBots', () => {
 
         const buffer = compressed.toBuffer();
         expect(buffer.toString('hex')).toBe(
-            '2bfc000003fc000003fc03b8c174f4e6920208028118400019c00003c3c03ffc03c3ffc3ffcacce110f011c305d3d4ece7ffa3245062a0006b0010111f4800610008888999c70001c703fe071ff1ff'
+            '2bfc000003fc000003fc03d4d15fa017dd2c041005023080003380000787807ff80787ff87ff9599c221e024668afd00d37bdffe8c91418a8001ac0040447d20018400222226671c00071c0ff81c7fc7fc'
         );
 
         const recovered = CompressedBots.fromBuffer(buffer);
