@@ -158,7 +158,7 @@ This module contains functions and classes that assist in handling the JSON and 
 ### Coordinate System
 
 All bots are defined as cubic voxels in a 3D coordinate system.
-The origin (0, 0, 0) of the coordinate system is at the front, bottom, left corner of the space.
+The origin (0, 0, 0) of the coordinate system is at the front, bottom, left corner of the space _from the perspective of the viewer_.
 The minimum value for each coordinate is `0`, and the maximum value is `15`.
 
 Note that the `z` value increases as you move away from the camera, which is the opposite of some other coordinate systems (e.g. THREE.js).
