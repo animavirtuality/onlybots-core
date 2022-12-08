@@ -1,4 +1,4 @@
-# OnlyBots Core
+# Onlybots Core
 
 This module contains functions and classes that assist in handling the JSON and binary format of OnlyBots, as well as converting between the two.
 
