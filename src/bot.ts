@@ -68,9 +68,8 @@ type MetadataAsset = {
 
 type TokenMetadata<E> = {
     name: string;
-    description?: string;
-    external_url?: string;
-    background_color: string;
+    description: string;
+    external_url: string;
     image: string;
     animation_url?: string;
     attributes: MetadataAttribute[];
