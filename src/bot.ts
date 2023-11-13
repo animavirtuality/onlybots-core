@@ -1,6 +1,8 @@
-import * as t from 'runtypes';
+import Ajv from 'ajv';
 import { Point3 } from '@/point';
 import { packVoxelSpace } from '@/utils';
+
+const ajv = new Ajv();
 
 export const OnlyBotLayerType = ['body', 'eye', 'arm', 'leg', 'top', 'tail'] as const;
 export type OnlyBotLayerType = typeof OnlyBotLayerType[number];
@@ -31,28 +33,27 @@ export type OnlyBotLayer = {
     voxels: Point3[];
 };
 
-export const OnlyBotJson = t.Record({
-    name: t.String,
-    anchor: t.Record({
-        x: t.Number,
-        y: t.Number,
-        z: t.Number,
-    }),
-    materials: t.Array(
-        t.Record({
-            color: t.Tuple(t.Number, t.Number, t.Number),
-            preset: t.Number,
-        })
-    ),
-    layers: t.Array(
-        t.Record({
-            type: t.Number,
-            material: t.Number,
-            voxels: t.Array(t.Tuple(t.Number, t.Number, t.Number)),
-        })
-    ),
-});
-export type OnlyBotJson = t.Static<typeof OnlyBotJson>;
+export type OnlyBotJson = {
+    name: string;
+    anchor: {
+        x: number;
+        y: number;
+        z: number;
+    };
+    materials: Array<{
+        color: [number, number, number];
+        preset: number;
+    }>;
+    layers: Array<{
+        type: number;
+        material: number;
+        voxels: Array<[number, number, number]>;
+    }>;
+};
+
+// prettier-ignore
+const OnlyBotJsonSchema = {"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"name":{"type":"string"},"anchor":{"type":"object","properties":{"x":{"type":"number"},"y":{"type":"number"},"z":{"type":"number"}},"required":["x","y","z"]},"materials":{"type":"array","items":{"type":"object","properties":{"color":{"type":"array","items":{"type":"number"},"minItems":3,"maxItems":3},"preset":{"type":"number"}},"required":["color","preset"]}},"layers":{"type":"array","items":{"type":"object","properties":{"type":{"type":"number"},"material":{"type":"number"},"voxels":{"type":"array","items":{"type":"array","items":{"type":"number"},"minItems":3,"maxItems":3}}},"required":["type","material","voxels"]}}},"required":["name","anchor","materials","layers"]};
+const OnlyBotJsonValidator = ajv.compile<OnlyBotJson>(OnlyBotJsonSchema);
 
 type MetadataAttribute = {
     trait_type?: string;
@@ -99,13 +100,14 @@ export class OnlyBot {
     }
 
     static fromJSON(json: unknown): OnlyBot {
-        const checked = OnlyBotJson.check(json);
-
+        if (!OnlyBotJsonValidator(json)) {
+            throw new Error('Invalid OnlyBot JSON');
+        }
         return new OnlyBot(
-            checked.name,
-            checked.anchor,
-            checked.materials,
-            checked.layers.map((layer) => ({
+            json.name,
+            json.anchor,
+            json.materials,
+            json.layers.map((layer) => ({
                 ...layer,
                 voxels: layer.voxels.map(([x, y, z]: [number, number, number]) => new Point3(x, y, z)),
             }))

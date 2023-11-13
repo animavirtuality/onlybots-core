@@ -32,7 +32,7 @@ describe('OnlyBot', () => {
     it('throws when given invalid json', () => {
         expect(() => {
             OnlyBot.fromJSON({});
-        }).toThrow('Validation failed:');
+        }).toThrow('Invalid OnlyBot JSON');
     });
 
     it('serializes voxels stably', () => {
