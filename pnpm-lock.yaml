@@ -64,9 +64,6 @@ devDependencies:
   tsc-alias:
     specifier: ^1.7.0
     version: 1.7.0
-  tslib:
-    specifier: ^2.4.0
-    version: 2.4.0
   typescript:
     specifier: ^4.8.4
     version: 4.8.4
