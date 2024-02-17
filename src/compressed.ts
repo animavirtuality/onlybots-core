@@ -1,7 +1,7 @@
-import { Point2, Point3, Point3Set } from '@/point';
-import { OnlyBot, OnlyBotLayer, OnlyBotMaterial } from '@/bot';
-import { mapAsciiToBits, mapBitsToAscii, ReadingBitBuffer, WritingBitBuffer } from '@/bits';
-import { calculateVoxelBounds, packVoxelSpace } from '@/utils';
+import { Point2, Point3, Point3Set } from '@/point.js';
+import { OnlyBot, OnlyBotLayer, OnlyBotMaterial } from '@/bot.js';
+import { mapAsciiToBits, mapBitsToAscii, ReadingBitBuffer, WritingBitBuffer } from '@/bits.js';
+import { calculateVoxelBounds, packVoxelSpace } from '@/utils.js';
 
 const BIT_LENGTH = {
     COLOR_COUNT_BITWIDTH: 4,

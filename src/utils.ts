@@ -1,4 +1,4 @@
-import { Point3 } from '@/point';
+import { Point3 } from '@/point.js';
 
 export const calculateVoxelBounds = (voxels: Point3[]): { min: Point3; max: Point3 } => {
     if (voxels.length <= 0) {

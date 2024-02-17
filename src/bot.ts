@@ -1,8 +1,9 @@
 import Ajv from 'ajv';
-import { Point3 } from '@/point';
-import { packVoxelSpace } from '@/utils';
+import { Point3 } from '@/point.js';
+import { packVoxelSpace } from '@/utils.js';
 
-const ajv = new Ajv();
+// https://arethetypeswrong.github.io/?p=ajv%408.12.0
+const ajv = new Ajv.default();
 
 export const OnlyBotLayerType = ['body', 'eye', 'arm', 'leg', 'top', 'tail'] as const;
 export type OnlyBotLayerType = typeof OnlyBotLayerType[number];

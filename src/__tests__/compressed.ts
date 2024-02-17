@@ -1,7 +1,7 @@
 import { describe, it, expect } from '@jest/globals';
-import { OnlyBot } from '@/bot';
-import { Point3 } from '@/point';
-import { CompressedBots } from '@/compressed';
+import { OnlyBot } from '@/bot.js';
+import { Point3 } from '@/point.js';
+import { CompressedBots } from '@/compressed.js';
 
 const bot1 = new OnlyBot(
     'BOT ONE',

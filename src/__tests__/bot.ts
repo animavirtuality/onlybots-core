@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@jest/globals';
-import { OnlyBot, OnlyBotAnchor, OnlyBotMaterial } from '@/bot';
-import { Point3 } from '@/point';
+import { OnlyBot, OnlyBotAnchor, OnlyBotMaterial } from '@/bot.js';
+import { Point3 } from '@/point.js';
 
 describe('OnlyBot', () => {
     it('constructs a bot from valid json', () => {

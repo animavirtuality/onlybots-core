@@ -13,7 +13,7 @@
         ]
     },
     "moduleNameMapper": {
-        "^@/(.*)$": "<rootDir>/$1"
+        "^@/(.*).js$": "<rootDir>/$1.ts"
     },
     "collectCoverage": true,
     "coverageDirectory": "<rootDir>/../build/coverage",

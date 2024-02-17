@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@jest/globals';
 
-import { mapAsciiToBits, mapBitsToAscii, ReadingBitBuffer, splitBits, WritingBitBuffer } from '@/bits';
+import { mapAsciiToBits, mapBitsToAscii, ReadingBitBuffer, splitBits, WritingBitBuffer } from '@/bits.js';
 
 describe('splitBits', () => {
     it('handles 0', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { Point2, Point3 } from '@/point';
+import { Point2, Point3 } from '@/point.js';
 
 describe('Point2', () => {
     it('has a pretty toString', () => {

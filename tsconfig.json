@@ -3,10 +3,10 @@
         "strictMode": true
     },
     "compilerOptions": {
-        "module": "esnext",
+        "module": "node16",
         "target": "es2022",
         "lib": ["es2021"],
-        "moduleResolution": "node",
+        "moduleResolution": "node16",
         "baseUrl": "./src",
         "paths": {
             "@/*": ["./*"]

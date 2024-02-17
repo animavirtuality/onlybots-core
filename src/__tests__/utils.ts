@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@jest/globals';
-import { calculateVoxelBounds } from '@/utils';
-import { Point3 } from '@/point';
+import { calculateVoxelBounds } from '@/utils.js';
+import { Point3 } from '@/point.js';
 
 describe('calculateVoxelBounds', () => {
     it('throws on invalid input', () => {
